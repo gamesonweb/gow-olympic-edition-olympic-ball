@@ -116,7 +116,7 @@ async function initGame(playerCount) {
         // Caméra universelle
         camera = new BABYLON.UniversalCamera("UniversalCamera", new BABYLON.Vector3(0, 5, -10), scene);
         camera.setTarget(BABYLON.Vector3.Zero());
-        camera.attachControl(canvas, true);
+        //camera.attachControl(canvas, true);
         camera.keysUp = []; // Désactiver le contrôle par défaut de la caméra
         camera.keysDown = [];
         camera.keysLeft = [];
