@@ -8,23 +8,39 @@ export default class Arena {
       this.groundConfig = levelConfig.ground;
       this.holeColor = levelConfig.holeColor;
       this.wallsConfig = levelConfig.walls;
+       // Initialize movingWalls array
+    this.movingWalls = [];
   }
 
   createGround() {
-      const ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground", this.map, {
-          width: this.groundConfig.width,
-          height: this.groundConfig.height,
-          subdivisions: this.groundConfig.subdivisions,
-          minHeight: this.groundConfig.minHeight,
-          maxHeight: this.groundConfig.maxHeight,
+    let ground;
+    if (this.map) {
+      ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground", this.map, {
+        width: this.groundConfig.width,
+        height: this.groundConfig.height,
+        subdivisions: this.groundConfig.subdivisions,
+        minHeight: this.groundConfig.minHeight,
+        maxHeight: this.groundConfig.maxHeight,
+      }, this.scene);
+      
+      ground.onReady = () => {
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
+      };
+    } else {
+      ground = BABYLON.MeshBuilder.CreateGround("ground", {
+        width: this.groundConfig.width,
+        height: this.groundConfig.height,
+        subdivisions: this.groundConfig.subdivisions,
       }, this.scene);
 
-      ground.onReady = () => {
-          ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
-      };
+      // Directly apply the physics impostor if there is no height map
+      ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
+    }
+      
 
       return ground;
   }
+  
 
   createHole() {
     const holeMaterial = new BABYLON.StandardMaterial("holeMat", this.scene);
@@ -46,16 +62,34 @@ export default class Arena {
 }
 
 
-  createWalls() {
-      this.wallsConfig.forEach(wallConfig => {
-          const wallMaterial = new BABYLON.StandardMaterial("wallMat", this.scene);
-          wallMaterial.diffuseColor = new BABYLON.Color3(...wallConfig.color);
-          const wall = BABYLON.MeshBuilder.CreateBox("wall", { height: wallConfig.height, width: wallConfig.width, depth: wallConfig.depth }, this.scene);
-          wall.position = new BABYLON.Vector3(...wallConfig.position);
-          wall.material = wallMaterial;
-          wall.physicsImpostor = new BABYLON.PhysicsImpostor(wall, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.9 }, this.scene);
-      });
-  }
+createWalls() {
+  this.wallsConfig.forEach(wallConfig => {
+      const wallMaterial = new BABYLON.StandardMaterial("wallMat", this.scene);
+      wallMaterial.diffuseColor = new BABYLON.Color3(...wallConfig.color);
+      const wall = BABYLON.MeshBuilder.CreateBox("wall", { height: wallConfig.height, width: wallConfig.width, depth: wallConfig.depth }, this.scene);
+      wall.position = new BABYLON.Vector3(...wallConfig.position);
+      wall.material = wallMaterial;
+      wall.physicsImpostor = new BABYLON.PhysicsImpostor(wall, BABYLON.PhysicsImpostor.BoxImpostor, { mass: 0, restitution: 0.9 }, this.scene);
+
+      if (wallConfig.isMoving) {
+          this.movingWalls.push({
+              mesh: wall,
+              axis: wallConfig.axis,
+              range: wallConfig.range,
+              speed: wallConfig.speed,
+              startPosition: wall.position.clone(),
+          });
+      }
+  });
+}
+
+animateMovingWalls() {
+  this.movingWalls.forEach(wall => {
+      const position = wall.mesh.position[wall.axis];
+      const newPosition = wall.startPosition[wall.axis] + Math.sin(Date.now() * 0.001 * wall.speed) * wall.range;
+      wall.mesh.position[wall.axis] = newPosition;
+  });
+}
 
   generate() {
       this.createGround();

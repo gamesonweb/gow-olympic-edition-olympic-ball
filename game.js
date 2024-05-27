@@ -14,7 +14,7 @@ document.getElementById("twoPlayersBtn").addEventListener("click", function () {
 let ammoLoaded = Ammo().then(function (AmmoLib) {
     window.Ammo = AmmoLib;
 });
-
+let arena;
 async function initGame(playerCount) {
     await ammoLoaded;
 
@@ -22,11 +22,7 @@ async function initGame(playerCount) {
     var engine = new BABYLON.Engine(canvas, true);
 
     var sphere, sphere2, camera;
-    var groundWidth = 10;
-    var groundHeight = 15;
     var moveSpeed = 2;
-    var startPoint = new BABYLON.Vector3(-groundWidth / 2.5, 0.5, groundHeight / 3.5);
-    var endPoint = new BABYLON.Vector3(groundWidth / 3, 0.5, -groundHeight / 3);
     var isSphereFalling = false;
     var isSphere1Airborne = false;
     var isSphere2Airborne = false;
@@ -38,46 +34,48 @@ async function initGame(playerCount) {
     var keysPlayer1 = { 'ArrowUp': false, 'ArrowDown': false, 'ArrowLeft': false, 'ArrowRight': false, 'Space': false };
     var keysPlayer2 = { 'z': false, 's': false, 'q': false, 'd': false, 'Shift': false };
 
-    function createScene(playerCount, levelIndex) {
+    function createScene(playerCount, levelConfig) {
         var scene = new BABYLON.Scene(engine);
-    
+
         scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.AmmoJSPlugin());
         scene.collisionsEnabled = true;
-    
+
         camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
         camera.setTarget(BABYLON.Vector3.Zero());
         camera.attachControl(canvas, true);
-    
+
         var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
         light.intensity = 0.7;
-    
-        var arena = new Arena(scene, levels[levelIndex]);
+
+        arena = new Arena(scene, levelConfig); // Assign value to arena variable
         arena.generate();
 
-        
-    
-        // Remove or hide the green sphere (endSphere)
-        // var endSphere = BABYLON.Mesh.CreateSphere('endSphere', 16, 0.4, scene);
-        // endSphere.position = endPoint;
-        // endSphere.material = new BABYLON.StandardMaterial('endSphereMat', scene);
-        // endSphere.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
-    
+        var groundWidth = levelConfig.ground.width;
+        var groundHeight = levelConfig.ground.height;
+
+        var startPoint = levelConfig.startPoint;
+        var endPoint = levelConfig.endPoint;
+
         sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
         sphere.position = startPoint;
         sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
-    
+
         if (playerCount === 2) {
             var startPoint2 = new BABYLON.Vector3(groundWidth / 2.5, 0.5, groundHeight / 3.5);
             sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 0.75, scene);
             sphere2.position = startPoint2;
             sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
         }
-    
-        return scene;
-    }
-    
 
-    var scene = createScene(playerCount, levelIndex);
+        return { scene, groundWidth, groundHeight, startPoint, endPoint };
+    }
+
+    var sceneData = createScene(playerCount, levels[levelIndex]);
+    var scene = sceneData.scene;
+    var groundWidth = sceneData.groundWidth;
+    var groundHeight = sceneData.groundHeight;
+    var startPoint = sceneData.startPoint;
+    var endPoint = sceneData.endPoint;
 
     engine.runRenderLoop(function () {
         if (!isSphereFalling) {
@@ -113,6 +111,7 @@ async function initGame(playerCount) {
             isSphere2Airborne = true;
             setTimeout(() => isSphere2Airborne = false, 500);
         }
+        arena.animateMovingWalls(); // Animer les murs mobiles
 
         checkWinCondition(sphere, 1);
         if (playerCount === 2) {
@@ -123,9 +122,15 @@ async function initGame(playerCount) {
         camera.position.z = sphere.position.z - 10;
 
         if (Math.abs(sphere.position.x) > groundWidth / 2 || Math.abs(sphere.position.z) > groundHeight / 2) {
-            sphere.position = startPoint.clone();
-        }
+            
+            sphere.position = startPoint.clone(); // Ramenez la sphère au point de départ
 
+        }
+        if (Math.abs(sphere2.position.x) > groundWidth / 2 || Math.abs(sphere2.position.z) > groundHeight / 2) {
+            
+            sphere2.position = startPoint.clone(); // Ramenez la sphère au point de départ
+
+        }
         scene.render();
     });
 
@@ -158,98 +163,96 @@ async function initGame(playerCount) {
             keysPlayer1['Space'] = false;
         }
     });
-    
 
-    // Vérifier la condition de victoire
-     
     function checkWinCondition(sphere, playerNumber) {
         const winThreshold = 0.5;
-    
+
         if ((BABYLON.Vector3.Distance(sphere.position, endPoint)) < winThreshold && !winnerDeclared) {
-            // Déclarer le joueur gagnant
             winnerDeclared = true;
             winningPlayer = playerNumber;
-    
-            // Désactiver la physique de la sphère
+
             sphere.physicsImpostor.dispose();
-    
-            // Animer la sphère pour qu'elle se déplace au centre du trou
+
             BABYLON.Animation.CreateAndStartAnimation('fall', sphere, 'position', 60, 30, sphere.position, endPoint, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-    
-            // Attendre 2 secondes avant de passer au niveau suivant
+
             setTimeout(function () {
-                // Passer au niveau suivant si disponible
                 levelIndex++;
                 if (levelIndex < levels.length) {
                     displayWinMessage();
                 } else {
                     alert('Félicitations ! Vous avez terminé tous les niveaux.');
                 }
-                // Réinitialiser la variable indiquant si la sphère tombe
                 setTimeout(function () {
                     isSphereFalling = false;
                 }, 1000);
             }, 2000);
         }
     }
-    
 
-    
-    
-// Affichage du message de victoire
-function displayWinMessage() {
-    var winMessage = document.createElement('div');
-    winMessage.style.position = 'absolute';
-    winMessage.style.top = '50%';
-    winMessage.style.left = '50%';
-    winMessage.style.transform = 'translate(-50%, -50%)';
-    winMessage.style.backgroundColor = '#ffffff';
-    winMessage.style.padding = '20px';
-    winMessage.style.textAlign = 'center';
-    winMessage.style.border = '2px solid #000000';
-    winMessage.style.borderRadius = '10px';
-    winMessage.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
+    function displayWinMessage() {
+        var winMessage = document.createElement('div');
+        winMessage.style.position = 'absolute';
+        winMessage.style.top = '50%';
+        winMessage.style.left = '50%';
+        winMessage.style.transform = 'translate(-50%, -50%)';
+        winMessage.style.backgroundColor = '#ffffff';
+        winMessage.style.padding = '20px';
+        winMessage.style.textAlign = 'center';
+        winMessage.style.border = '2px solid #000000';
+        winMessage.style.borderRadius = '10px';
+        winMessage.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
 
-    var winnerText = document.createElement('p');
-    winnerText.style.fontSize = '24px';
-    winnerText.style.fontWeight = 'bold';
-    winnerText.style.marginBottom = '20px';
-    winnerText.innerText = `Joueur ${winningPlayer} a gagné !`;
-    winMessage.appendChild(winnerText);
+        var winnerText = document.createElement('p');
+        winnerText.style.fontSize = '24px';
+        winnerText.style.fontWeight = 'bold';
+        winnerText.style.marginBottom = '20px';
+        winnerText.innerText = `Joueur ${winningPlayer} a gagné !`;
+        winMessage.appendChild(winnerText);
 
-    var nextLevelBtn = document.createElement('button');
-    nextLevelBtn.style.backgroundColor = '#4caf50';
-    nextLevelBtn.style.color = '#ffffff';
-    nextLevelBtn.style.border = 'none';
-    nextLevelBtn.style.padding = '10px 20px';
-    nextLevelBtn.style.marginRight = '10px';
-    nextLevelBtn.style.cursor = 'pointer';
-    nextLevelBtn.innerText = 'Niveau Suivant';
-    nextLevelBtn.addEventListener('click', function () {
-        document.body.removeChild(winMessage);
-        scene.dispose();
-        scene = createScene(playerCount, levelIndex);
-        winnerDeclared = false;
-    });
-    winMessage.appendChild(nextLevelBtn);
+        var nextLevelBtn = document.createElement('button');
+        nextLevelBtn.style.backgroundColor = '#4caf50';
+        nextLevelBtn.style.color = '#ffffff';
+        nextLevelBtn.style.border = 'none';
+        nextLevelBtn.style.padding = '10px 20px';
+        nextLevelBtn.style.fontSize = '18px';
+        nextLevelBtn.style.cursor = 'pointer';
+        nextLevelBtn.style.marginRight = '10px';
+        nextLevelBtn.innerText = 'Niveau Suivant';
+        nextLevelBtn.addEventListener('click', function () {
+            document.body.removeChild(winMessage);
+            scene.dispose();
+            sceneData = createScene(playerCount, levels[levelIndex]);
+            scene = sceneData.scene;
+            groundWidth = sceneData.groundWidth;
+            groundHeight = sceneData.groundHeight;
+            startPoint = sceneData.startPoint;
+            endPoint = sceneData.endPoint;
+            winnerDeclared = false;
+        });
+        winMessage.appendChild(nextLevelBtn);
 
-    var restartBtn = document.createElement('button');
-    restartBtn.style.backgroundColor = '#f44336';
-    restartBtn.style.color = '#ffffff';
-    restartBtn.style.border = 'none';
-    restartBtn.style.padding = '10px 20px';
-    restartBtn.style.cursor = 'pointer';
-    restartBtn.innerText = 'Recommencer';
-    restartBtn.addEventListener('click', function () {
-        document.body.removeChild(winMessage);
-        levelIndex = 0;
-        scene.dispose();
-        scene = createScene(playerCount, levelIndex);
-        winnerDeclared = false;
-    });
-    winMessage.appendChild(restartBtn);
+        var restartBtn = document.createElement('button');
+        restartBtn.style.backgroundColor = '#f44336';
+        restartBtn.style.color = '#ffffff';
+        restartBtn.style.border = 'none';
+        restartBtn.style.padding = '10px 20px';
+        restartBtn.style.fontSize = '18px';
+        restartBtn.style.cursor = 'pointer';
+        restartBtn.innerText = 'Recommencer';
+        restartBtn.addEventListener('click', function () {
+            document.body.removeChild(winMessage);
+            levelIndex = 0;
+            scene.dispose();
+            sceneData = createScene(playerCount, levels[levelIndex]);
+            scene = sceneData.scene;
+            groundWidth = sceneData.groundWidth;
+            groundHeight = sceneData.groundHeight;
+            startPoint = sceneData.startPoint;
+            endPoint = sceneData.endPoint;
+            winnerDeclared = false;
+        });
+        winMessage.appendChild(restartBtn);
 
-    document.body.appendChild(winMessage);
-}
-
+        document.body.appendChild(winMessage);
+    }
 }
