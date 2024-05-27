@@ -1,280 +1,255 @@
 import Arena from './Arena.js';
 import levels from './levels.js';
 
-
-
 document.getElementById("onePlayerBtn").addEventListener("click", function () {
     document.getElementById("playerSelection").style.display = "none";
-    initGame(1).catch(console.error); // Démarrer le jeu avec 1 joueur
+    initGame(1).catch(console.error);
 });
 
 document.getElementById("twoPlayersBtn").addEventListener("click", function () {
     document.getElementById("playerSelection").style.display = "none";
-    initGame(2).catch(console.error); // Démarrer le jeu avec 2 joueurs
+    initGame(2).catch(console.error);
 });
+
 let ammoLoaded = Ammo().then(function (AmmoLib) {
-    window.Ammo = AmmoLib; // Assurez-vous que Ammo est disponible globalement
+    window.Ammo = AmmoLib;
 });
+
 async function initGame(playerCount) {
-    await ammoLoaded; // Assurez-vous qu'Ammo est chargé avant de continuer
+    await ammoLoaded;
 
     var canvas = document.getElementById('renderCanvas');
     var engine = new BABYLON.Engine(canvas, true);
 
-    var sphere, camera;
-    var sphere2; // Déclaration pour la seconde sphère si deux joueurs sont sélectionnés
+    var sphere, sphere2, camera;
     var groundWidth = 10;
     var groundHeight = 15;
-    var moveSpeed = 2; 
+    var moveSpeed = 2;
     var startPoint = new BABYLON.Vector3(-groundWidth / 2.5, 0.5, groundHeight / 3.5);
     var endPoint = new BABYLON.Vector3(groundWidth / 3, 0.5, -groundHeight / 3);
     var isSphereFalling = false;
-    var isSphere1Airborne = false; // Pour suivre si la première sphère est en l'air
-    var isSphere2Airborne = false; // Pour suivre si la seconde sphère est en l'air
+    var isSphere1Airborne = false;
+    var isSphere2Airborne = false;
     var levelIndex = 0;
+    var winnerDeclared = false;
+    var winningPlayer = null;
+    var sphereLabel1, sphereLabel2;
 
+    var keysPlayer1 = { 'ArrowUp': false, 'ArrowDown': false, 'ArrowLeft': false, 'ArrowRight': false, 'Space': false };
+    var keysPlayer2 = { 'z': false, 's': false, 'q': false, 'd': false, 'Shift': false };
 
-    window.addEventListener('DOMContentLoaded', function () {
-        var canvas = document.getElementById('renderCanvas');
-        var keysPlayer1 = {
-            ArrowUp: false,
-            ArrowDown: false,
-            ArrowLeft: false,
-            ArrowRight: false,
-            Space: false
-        };
-        var keysPlayer2 = {
-            z: false,
-            s: false,
-            q: false,
-            d: false,
-            Shift: false
-        };
-
-        window.addEventListener("keydown", function (event) {
-            const key = event.key.toLowerCase(); // Normalisez la clé pour la comparaison
-            if (key in keysPlayer1) {
-                keysPlayer1[key] = true;
-                event.preventDefault(); // Prévenez l'action par défaut uniquement si la clé est utilisée pour le jeu
-            } else if (key in keysPlayer2) {
-                keysPlayer2[key] = true;
-                event.preventDefault();
-            }
-        });
-
-        window.addEventListener("keyup", function (event) {
-            const key = event.key.toLowerCase(); // Normalisez la clé pour la comparaison
-            if (key in keysPlayer1) {
-                keysPlayer1[key] = false;
-            } else if (key in keysPlayer2) {
-                keysPlayer2[key] = false;
-            }
-        });
-
-    });
-
-    var keysPlayer1 = {
-        ArrowUp: false,
-        ArrowDown: false,
-        ArrowLeft: false,
-        ArrowRight: false
-    };
-    var keysPlayer2 = {
-        z: false,
-        s: false,
-        q: false,
-        d: false,
-        Shift: false
-    };
-    window.addEventListener("keydown", function (event) {
-        if (event.key in keysPlayer1) {
-            keysPlayer1[event.key] = true;
-        } else if (event.key.toLowerCase() in keysPlayer2) {
-            // Utiliser toLowerCase pour s'assurer que les touches majuscules et minuscules sont traitées de la même manière
-            keysPlayer2[event.key.toLowerCase()] = true;
-        }
-        event.preventDefault();
-    });
-
-    window.addEventListener("keyup", function (event) {
-        if (event.key in keysPlayer1) {
-            keysPlayer1[event.key] = false;
-        } else if (event.key.toLowerCase() in keysPlayer2) {
-            keysPlayer2[event.key.toLowerCase()] = false;
-        }
-    });
-
-
-    var createScene = function (playerCount, levelIndex) {
-        levelIndex = levelIndex || 0; // Niveau par défaut
+    function createScene(playerCount, levelIndex) {
         var scene = new BABYLON.Scene(engine);
-        var gravityVector = new BABYLON.Vector3(0, -9.81, 0);
-        var physicsPlugin = new BABYLON.AmmoJSPlugin();
-        scene.enablePhysics(gravityVector, physicsPlugin);
-        scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-
-        // Caméra universelle
-        camera = new BABYLON.UniversalCamera("UniversalCamera", new BABYLON.Vector3(0, 5, -10), scene);
+    
+        scene.enablePhysics(new BABYLON.Vector3(0, -9.81, 0), new BABYLON.AmmoJSPlugin());
+        scene.collisionsEnabled = true;
+    
+        camera = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
         camera.setTarget(BABYLON.Vector3.Zero());
-        //camera.attachControl(canvas, true);
-        camera.keysUp = []; // Désactiver le contrôle par défaut de la caméra
-        camera.keysDown = [];
-        camera.keysLeft = [];
-        camera.keysRight = [];
+        camera.attachControl(canvas, true);
+    
+        var light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
+        light.intensity = 0.7;
+    
+        var arena = new Arena(scene, levels[levelIndex]);
+        arena.generate();
 
-        var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-
-        // var groundObject = new Ground(scene, groundWidth, groundHeight, startPoint);
-        // var ground = groundObject.createGround();
-
-        var arenaData = levels[levelIndex];
-        var arena = new Arena(scene, arenaData.map, arenaData.startPoint, arenaData.endPoint, arenaData.holeSize);
-        arena.createGround(arenaData.ground.width, arenaData.ground.height, arenaData.ground.subdivisions, arenaData.ground.minHeight, arenaData.ground.maxHeight, arenaData.ground.map);
-
-        // Création de la sphère au point de départ avec les collisions
-        sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 0.5 }, scene);
-        sphere.position = startPoint.clone();
-        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
-
+        
+    
+        // Remove or hide the green sphere (endSphere)
+        // var endSphere = BABYLON.Mesh.CreateSphere('endSphere', 16, 0.4, scene);
+        // endSphere.position = endPoint;
+        // endSphere.material = new BABYLON.StandardMaterial('endSphereMat', scene);
+        // endSphere.material.diffuseColor = new BABYLON.Color3(0, 1, 0);
+    
+        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
+        sphere.position = startPoint;
+        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+    
         if (playerCount === 2) {
-            // Créer une deuxième sphère pour le deuxième joueur
-            sphere2 = BABYLON.MeshBuilder.CreateSphere("sphere2", { diameter: 0.5 }, scene);
-            sphere2.position = startPoint.clone().add(new BABYLON.Vector3(1, 0, 0)); // Légèrement décalée pour éviter les superpositions
-            sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9 }, scene);
+            var startPoint2 = new BABYLON.Vector3(groundWidth / 2.5, 0.5, groundHeight / 3.5);
+            sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 0.75, scene);
+            sphere2.position = startPoint2;
+            sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
         }
-
-        // // Création d'un petit cube pour représenter le mouvement de la sphère
-        // var cube = BABYLON.MeshBuilder.CreateBox("cube", { size: 0.1 }, scene);
-        // cube.parent = sphere; // Attacher le cube à la sphère
-        // cube.position.y = 0.25; // Décalage vers le haut pour le placer à l'intérieur de la sphère
-
-        // Ajout de l'animation de rotation à la sphère
-        var rotateAnimation = new BABYLON.Animation(
-            "rotationAnimation", // Nom de l'animation
-            "rotation.y", // Propriété à animer (rotation autour de l'axe y)
-            30, // Nombre de frames par seconde
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE // Mode de boucle de l'animation
-        );
-
-        var keys = [];
-        keys.push({
-            frame: 0,
-            value: 0
-        });
-        keys.push({
-            frame: 30,
-            value: Math.PI * 2 // Une rotation complète sur 30 frames (une seconde)
-        });
-
-        rotateAnimation.setKeys(keys);
-        sphere.animations.push(rotateAnimation);
-        scene.beginAnimation(sphere, 0, 30, true);
-
-        // Création des murs en utilisant les dessins comme guide pour les positions et les dimensions
-        arenaData.walls.forEach(wallData => {
-            arena.createWalls(wallData.height, wallData.width, wallData.depth, wallData.position, wallData.color);
-        });
-
-        // Création du trou et le rendre visible
-        arena.createHole(arenaData.holeColor);
-
+    
         return scene;
-    };
+    }
+    
 
-
-    var scene = createScene();
+    var scene = createScene(playerCount, levelIndex);
 
     engine.runRenderLoop(function () {
         if (!isSphereFalling) {
             var forceDirection = new BABYLON.Vector3(0, 0, 0);
-            if (keysPlayer1.ArrowUp) forceDirection.z += moveSpeed;
-            if (keysPlayer1.ArrowDown) forceDirection.z -= moveSpeed;
-            if (keysPlayer1.ArrowLeft) forceDirection.x -= moveSpeed;
-            if (keysPlayer1.ArrowRight) forceDirection.x += moveSpeed;
+            if (keysPlayer1['ArrowUp']) forceDirection.z += moveSpeed;
+            if (keysPlayer1['ArrowDown']) forceDirection.z -= moveSpeed;
+            if (keysPlayer1['ArrowLeft']) forceDirection.x -= moveSpeed;
+            if (keysPlayer1['ArrowRight']) forceDirection.x += moveSpeed;
             forceDirection.normalize().scaleInPlace(moveSpeed);
             sphere.physicsImpostor.applyForce(forceDirection, sphere.getAbsolutePosition());
         }
+
         if (playerCount === 2 && sphere2) {
             var forceDirection2 = new BABYLON.Vector3(0, 0, 0);
-            if (keysPlayer2.z) forceDirection2.z += moveSpeed;
-            if (keysPlayer2.s) forceDirection2.z -= moveSpeed;
-            if (keysPlayer2.q) forceDirection2.x -= moveSpeed;
-            if (keysPlayer2.d) forceDirection2.x += moveSpeed;
+            if (keysPlayer2['z']) forceDirection2.z += moveSpeed;
+            if (keysPlayer2['s']) forceDirection2.z -= moveSpeed;
+            if (keysPlayer2['q']) forceDirection2.x -= moveSpeed;
+            if (keysPlayer2['d']) forceDirection2.x += moveSpeed;
             forceDirection2.normalize().scaleInPlace(moveSpeed);
             sphere2.physicsImpostor.applyForce(forceDirection2, sphere2.getAbsolutePosition());
         }
 
-        // Gestion du saut pour la première sphère
-        if (keysPlayer1.Space && !isSphere1Airborne) {
-            var jumpForce = new BABYLON.Vector3(0, 5, 0); // Ajustez la force selon le besoin
+        if (keysPlayer1['Space'] && !isSphere1Airborne) {
+            var jumpForce = new BABYLON.Vector3(0, 5, 0);
             sphere.physicsImpostor.applyImpulse(jumpForce, sphere.getAbsolutePosition());
             isSphere1Airborne = true;
-            // Utilisez les événements de collision ou un délai pour réinitialiser cet état
-            setTimeout(() => isSphere1Airborne = false, 500); // Exemple avec un délai
+            setTimeout(() => isSphere1Airborne = false, 500);
         }
 
-        // Gestion du saut pour la deuxième sphère
-        if (playerCount === 2 && keysPlayer2.Shift && !isSphere2Airborne) {
+        if (playerCount === 2 && keysPlayer2['Shift'] && !isSphere2Airborne) {
             var jumpForce2 = new BABYLON.Vector3(0, 5, 0);
             sphere2.physicsImpostor.applyImpulse(jumpForce2, sphere2.getAbsolutePosition());
             isSphere2Airborne = true;
-            setTimeout(() => isSphere2Airborne = false, 500); // De même pour le deuxième joueur
+            setTimeout(() => isSphere2Airborne = false, 500);
         }
 
-        // Inside the event handler where the sphere falls into the hole
-        if ((BABYLON.Vector3.Distance(sphere.position, endPoint)) < 1 && !isSphereFalling) {
-            // Marquer que la sphère tombe dans le trou
-            isSphereFalling = true;
-
-            // Animer la sphère pour donner l'illusion qu'elle tombe dans le trou
-            BABYLON.Animation.CreateAndStartAnimation('fall', sphere, 'position.y', 60, 30, sphere.position.y, sphere.position.y - 1.5, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-
-            // Attendre 2 secondes avant de réinitialiser la position de la sphère
-            setTimeout(function () {
-                // Stopper l'animation de chute
-                scene.stopAnimation(sphere);
-
-                // Réinitialiser la position de la sphère au-dessus du trou
-                sphere.position = new BABYLON.Vector3(endPoint.x, 0.5, endPoint.z);
-
-                // Incrémenter le niveau si d'autres niveaux sont disponibles
-                levelIndex++;
-                console.log('Level Index:' + levelIndex);
-
-                if (levelIndex < levels.length) {
-                    // Créer une nouvelle scène pour le prochain niveau
-                    scene.dispose(); // Dispose the current scene resources
-                    scene = createScene(playerCount, levelIndex);
-                } else {
-                    // End the game if there are no more levels
-                    alert('Congratulations! You have completed all levels.');
-                }
-
-                // Attendre un moment avant de retourner au point de départ
-                setTimeout(function () {
-                    isSphereFalling = false; // La sphère peut à nouveau bouger
-                }, 1000); // Attend 1 seconde avant de revenir au point de départ
-            }, 2000); // Attend 2 secondes pour simuler la chute
+        checkWinCondition(sphere, 1);
+        if (playerCount === 2) {
+            checkWinCondition(sphere2, 2);
         }
 
-        // Mise à jour de la position de la caméra pour suivre la sphère
         camera.position.x = sphere.position.x;
         camera.position.z = sphere.position.z - 10;
-        // Vérification des limites pour la sphère
-        if (Math.abs(sphere.position.x) > groundWidth / 2 || Math.abs(sphere.position.z) > groundHeight / 2) {
-            // La sphère a dépassé les limites, la réinitialiser au centre
-            sphere.position = startPoint.clone();
 
+        if (Math.abs(sphere.position.x) > groundWidth / 2 || Math.abs(sphere.position.z) > groundHeight / 2) {
+            sphere.position = startPoint.clone();
         }
+
         scene.render();
     });
 
     window.addEventListener('resize', function () {
         engine.resize();
     });
+
+    window.addEventListener('keydown', function (event) {
+        if (event.key in keysPlayer1) {
+            keysPlayer1[event.key] = true;
+        }
+        if (event.key in keysPlayer2) {
+            keysPlayer2[event.key] = true;
+        }
+        // Ajoutez une condition pour la touche d'espace
+        if (event.code === 'Space') {
+            keysPlayer1['Space'] = true;
+        }
+    });
+    
+    window.addEventListener('keyup', function (event) {
+        if (event.key in keysPlayer1) {
+            keysPlayer1[event.key] = false;
+        }
+        if (event.key in keysPlayer2) {
+            keysPlayer2[event.key] = false;
+        }
+        // Ajoutez une condition pour la touche d'espace
+        if (event.code === 'Space') {
+            keysPlayer1['Space'] = false;
+        }
+    });
+    
+
+    // Vérifier la condition de victoire
+     
+    function checkWinCondition(sphere, playerNumber) {
+        const winThreshold = 0.5;
+    
+        if ((BABYLON.Vector3.Distance(sphere.position, endPoint)) < winThreshold && !winnerDeclared) {
+            // Déclarer le joueur gagnant
+            winnerDeclared = true;
+            winningPlayer = playerNumber;
+    
+            // Désactiver la physique de la sphère
+            sphere.physicsImpostor.dispose();
+    
+            // Animer la sphère pour qu'elle se déplace au centre du trou
+            BABYLON.Animation.CreateAndStartAnimation('fall', sphere, 'position', 60, 30, sphere.position, endPoint, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    
+            // Attendre 2 secondes avant de passer au niveau suivant
+            setTimeout(function () {
+                // Passer au niveau suivant si disponible
+                levelIndex++;
+                if (levelIndex < levels.length) {
+                    displayWinMessage();
+                } else {
+                    alert('Félicitations ! Vous avez terminé tous les niveaux.');
+                }
+                // Réinitialiser la variable indiquant si la sphère tombe
+                setTimeout(function () {
+                    isSphereFalling = false;
+                }, 1000);
+            }, 2000);
+        }
+    }
+    
+
+    
+    
+// Affichage du message de victoire
+function displayWinMessage() {
+    var winMessage = document.createElement('div');
+    winMessage.style.position = 'absolute';
+    winMessage.style.top = '50%';
+    winMessage.style.left = '50%';
+    winMessage.style.transform = 'translate(-50%, -50%)';
+    winMessage.style.backgroundColor = '#ffffff';
+    winMessage.style.padding = '20px';
+    winMessage.style.textAlign = 'center';
+    winMessage.style.border = '2px solid #000000';
+    winMessage.style.borderRadius = '10px';
+    winMessage.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
+
+    var winnerText = document.createElement('p');
+    winnerText.style.fontSize = '24px';
+    winnerText.style.fontWeight = 'bold';
+    winnerText.style.marginBottom = '20px';
+    winnerText.innerText = `Joueur ${winningPlayer} a gagné !`;
+    winMessage.appendChild(winnerText);
+
+    var nextLevelBtn = document.createElement('button');
+    nextLevelBtn.style.backgroundColor = '#4caf50';
+    nextLevelBtn.style.color = '#ffffff';
+    nextLevelBtn.style.border = 'none';
+    nextLevelBtn.style.padding = '10px 20px';
+    nextLevelBtn.style.marginRight = '10px';
+    nextLevelBtn.style.cursor = 'pointer';
+    nextLevelBtn.innerText = 'Niveau Suivant';
+    nextLevelBtn.addEventListener('click', function () {
+        document.body.removeChild(winMessage);
+        scene.dispose();
+        scene = createScene(playerCount, levelIndex);
+        winnerDeclared = false;
+    });
+    winMessage.appendChild(nextLevelBtn);
+
+    var restartBtn = document.createElement('button');
+    restartBtn.style.backgroundColor = '#f44336';
+    restartBtn.style.color = '#ffffff';
+    restartBtn.style.border = 'none';
+    restartBtn.style.padding = '10px 20px';
+    restartBtn.style.cursor = 'pointer';
+    restartBtn.innerText = 'Recommencer';
+    restartBtn.addEventListener('click', function () {
+        document.body.removeChild(winMessage);
+        levelIndex = 0;
+        scene.dispose();
+        scene = createScene(playerCount, levelIndex);
+        winnerDeclared = false;
+    });
+    winMessage.appendChild(restartBtn);
+
+    document.body.appendChild(winMessage);
 }
-// Attendre que le DOM soit chargé pour lancer initGame
-window.addEventListener('DOMContentLoaded', function () {
-    initGame().catch(console.error); // Gérer les erreurs potentielles
-});
+
+}
