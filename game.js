@@ -26,10 +26,12 @@ async function initGame(playerCount) {
     var isSphereFalling = false;
     var isSphere1Airborne = false;
     var isSphere2Airborne = false;
+    var maxJumpHeight = 0.5;
     var levelIndex = 0;
     var winnerDeclared = false;
     var winningPlayer = null;
     var sphereLabel1, sphereLabel2;
+    var camera1, camera2;
 
     var keysPlayer1 = { 'ArrowUp': false, 'ArrowDown': false, 'ArrowLeft': false, 'ArrowRight': false, 'Space': false };
     var keysPlayer2 = { 'z': false, 's': false, 'q': false, 'd': false, 'Shift': false };
@@ -65,6 +67,26 @@ async function initGame(playerCount) {
             sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 0.75, scene);
             sphere2.position = startPoint2;
             sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+
+            // Camera for player 1
+            camera1 = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
+            camera1.viewport = new BABYLON.Viewport(0, 0, 0.5, 1.0); // Left half of the screen
+            camera1.setTarget(BABYLON.Vector3.Zero());
+            camera1.attachControl(canvas, true);
+
+            // Camera for player 2
+            camera2 = new BABYLON.FreeCamera('camera2', new BABYLON.Vector3(0, 5, -10), scene);
+            camera2.viewport = new BABYLON.Viewport(0.5, 0, 0.5, 1.0); // Right half of the screen
+            camera2.setTarget(BABYLON.Vector3.Zero());
+            camera2.attachControl(canvas, true);
+
+            scene.activeCameras.push(camera1);
+            scene.activeCameras.push(camera2);
+        }else {
+            // Existing camera setup for one player
+            camera1 = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
+            camera1.setTarget(BABYLON.Vector3.Zero());
+            camera1.attachControl(canvas, true);
         }
 
         return { scene, groundWidth, groundHeight, startPoint, endPoint };
@@ -98,19 +120,33 @@ async function initGame(playerCount) {
             sphere2.physicsImpostor.applyForce(forceDirection2, sphere2.getAbsolutePosition());
         }
 
-        if (keysPlayer1['Space'] && !isSphere1Airborne) {
+        if (keysPlayer1['Space'] && !isSphere1Airborne && sphere.position.y < maxJumpHeight) {
             var jumpForce = new BABYLON.Vector3(0, 5, 0);
             sphere.physicsImpostor.applyImpulse(jumpForce, sphere.getAbsolutePosition());
             isSphere1Airborne = true;
             setTimeout(() => isSphere1Airborne = false, 500);
         }
 
-        if (playerCount === 2 && keysPlayer2['Shift'] && !isSphere2Airborne) {
+        if (playerCount === 2 && keysPlayer2['Shift'] && !isSphere2Airborne && sphere2.position.y < maxJumpHeight) {
             var jumpForce2 = new BABYLON.Vector3(0, 5, 0);
             sphere2.physicsImpostor.applyImpulse(jumpForce2, sphere2.getAbsolutePosition());
             isSphere2Airborne = true;
             setTimeout(() => isSphere2Airborne = false, 500);
         }
+
+        if (playerCount === 2) {
+            // Update camera positions for split-screen
+            camera1.position.x = sphere.position.x;
+            camera1.position.z = sphere.position.z - 10;
+    
+            camera2.position.x = sphere2.position.x;
+            camera2.position.z = sphere2.position.z - 10;
+        } else {
+            // Existing camera update for one player
+            camera1.position.x = sphere.position.x;
+            camera1.position.z = sphere.position.z - 10;
+        }
+
         arena.animateMovingWalls(); // Animer les murs mobiles
 
         checkWinCondition(sphere, 1);
@@ -126,10 +162,9 @@ async function initGame(playerCount) {
             sphere.position = startPoint.clone(); // Ramenez la sphère au point de départ
 
         }
-        if (Math.abs(sphere2.position.x) > groundWidth / 2 || Math.abs(sphere2.position.z) > groundHeight / 2) {
-            
-            sphere2.position = startPoint.clone(); // Ramenez la sphère au point de départ
+        if (playerCount === 2 && (Math.abs(sphere2.position.x) > groundWidth / 2 || Math.abs(sphere2.position.z) > groundHeight / 2)) {
 
+            sphere2.position = startPoint.clone(); // Bring the second sphere back to the starting point
         }
         scene.render();
     });

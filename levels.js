@@ -4,7 +4,7 @@ const levels = [
         startPoint: new BABYLON.Vector3(-5, 0.5, 5),
         endPoint: new BABYLON.Vector3(10/3, 0.1, -5),
         holeSize: 1.0,
-        ground: { width: 10, height: 15, subdivisions: 32, minHeight: 0, maxHeight: 0.0 },
+        ground: { width: 10, height: 15, subdivisions: 0, minHeight: 0, maxHeight: 0.0 },
         holeColor: [0, 0, 0],
         walls: [
             { height: 1, width: 6, depth: 0.2, position: [-2, 0.5, 2], color: [1, 0.5, 0] }, 
@@ -20,7 +20,7 @@ const levels = [
         startPoint: new BABYLON.Vector3(-5, 0.5, 5),
         endPoint: new BABYLON.Vector3(10/3, 1, -5),
         holeSize: 1.0,
-        ground: { width: 10, height: 15, subdivisions: 32, minHeight: 0, maxHeight: 0.3 , map : "heightmap.webp" },
+        ground: { width: 10, height: 15, subdivisions: 32, minHeight: 0, maxHeight: 0.2 , map : "heightmap.webp" },
         holeColor: [0, 0, 0],
         walls: [
             { height: 1, width: 6, depth: 0.2, position: [-2, 0.5, 2], color: [1, 0.5, 0] }, 
