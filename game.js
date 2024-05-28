@@ -14,6 +14,7 @@ document.getElementById("twoPlayersBtn").addEventListener("click", function () {
 let ammoLoaded = Ammo().then(function (AmmoLib) {
     window.Ammo = AmmoLib;
 });
+
 let arena;
 async function initGame(playerCount) {
     await ammoLoaded;
@@ -32,6 +33,7 @@ async function initGame(playerCount) {
     var winningPlayer = null;
     var sphereLabel1, sphereLabel2;
     var camera1, camera2;
+    let sphereHealth = 100;
 
     var keysPlayer1 = { 'ArrowUp': false, 'ArrowDown': false, 'ArrowLeft': false, 'ArrowRight': false, 'Space': false };
     var keysPlayer2 = { 'z': false, 's': false, 'q': false, 'd': false, 'Shift': false };
@@ -63,7 +65,11 @@ async function initGame(playerCount) {
         sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
 
         if (playerCount === 2) {
-            var startPoint2 = new BABYLON.Vector3(groundWidth / 2.5, 0.5, groundHeight / 3.5);
+            var startPoint2 = new BABYLON.Vector3(
+                levels[levelIndex].startPoint.x + 2, 
+                0.5,
+                levels[levelIndex].startPoint.z
+            );
             sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 0.75, scene);
             sphere2.position = startPoint2;
             sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
@@ -82,7 +88,7 @@ async function initGame(playerCount) {
 
             scene.activeCameras.push(camera1);
             scene.activeCameras.push(camera2);
-        }else {
+        } else {
             // Existing camera setup for one player
             camera1 = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
             camera1.setTarget(BABYLON.Vector3.Zero());
@@ -99,9 +105,30 @@ async function initGame(playerCount) {
     var startPoint = sceneData.startPoint;
     var endPoint = sceneData.endPoint;
 
-    engine.runRenderLoop(function () {
+    async function resetSpherePosition(sphere, startPoint) {
+        sphere.physicsImpostor.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
+        sphere.physicsImpostor.setAngularVelocity(new BABYLON.Vector3(0, 0, 0));
+        sphere.position = startPoint.clone(); 
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    engine.runRenderLoop(async function () {
         let moveSpeed = levels[levelIndex].moveSpeed;
-        
+        arena.robots.forEach(robot => {
+            // Check the player's position relative to each robot
+            robot.update(sphere.position); 
+            if (playerCount === 2) {
+                robot.update(sphere2.position);
+            }
+        });
+        // Check for collision with water zones
+        arena.update(sphere); 
+        if (playerCount === 2) {
+            arena.update(sphere2);
+        }
         if (!isSphereFalling) {
             var forceDirection = new BABYLON.Vector3(0, 0, 0);
             if (keysPlayer1['ArrowUp']) forceDirection.z += moveSpeed;
@@ -140,7 +167,7 @@ async function initGame(playerCount) {
             // Update camera positions for split-screen
             camera1.position.x = sphere.position.x;
             camera1.position.z = sphere.position.z - 10;
-    
+
             camera2.position.x = sphere2.position.x;
             camera2.position.z = sphere2.position.z - 10;
         } else {
@@ -149,7 +176,7 @@ async function initGame(playerCount) {
             camera1.position.z = sphere.position.z - 10;
         }
 
-        arena.animateMovingWalls(); // Animer les murs mobiles
+        arena.animateMovingWalls(); // Animate moving walls
 
         checkWinCondition(sphere, 1);
         if (playerCount === 2) {
@@ -160,14 +187,12 @@ async function initGame(playerCount) {
         camera.position.z = sphere.position.z - 10;
 
         if (Math.abs(sphere.position.x) > groundWidth / 2 || Math.abs(sphere.position.z) > groundHeight / 2) {
-            
-            sphere.position = startPoint.clone(); // Ramenez la sphère au point de départ
-
+            await resetSpherePosition(sphere, startPoint);
         }
         if (playerCount === 2 && (Math.abs(sphere2.position.x) > groundWidth / 2 || Math.abs(sphere2.position.z) > groundHeight / 2)) {
-
-            sphere2.position = startPoint.clone(); // Bring the second sphere back to the starting point
+            await resetSpherePosition(sphere2, startPoint);
         }
+
         scene.render();
     });
 
@@ -182,12 +207,12 @@ async function initGame(playerCount) {
         if (event.key in keysPlayer2) {
             keysPlayer2[event.key] = true;
         }
-        // Ajoutez une condition pour la touche d'espace
+        // Add condition for space key
         if (event.code === 'Space') {
             keysPlayer1['Space'] = true;
         }
     });
-    
+
     window.addEventListener('keyup', function (event) {
         if (event.key in keysPlayer1) {
             keysPlayer1[event.key] = false;
@@ -195,7 +220,7 @@ async function initGame(playerCount) {
         if (event.key in keysPlayer2) {
             keysPlayer2[event.key] = false;
         }
-        // Ajoutez une condition pour la touche d'espace
+        // Add condition for space key
         if (event.code === 'Space') {
             keysPlayer1['Space'] = false;
         }
