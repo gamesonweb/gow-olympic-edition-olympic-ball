@@ -14,7 +14,8 @@ const levels = [
             { height: 1, width: 10.5, depth: 0.2, position: [0, 0.5, 7.7], color: [1, 0.5, 0] },  
             { height: 1, width: 10.5, depth: 0.2, position: [0, 0.5, -7.7], color: [1, 0.5, 0] },  
             
-        ]
+        ],
+        moveSpeed: 10
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 5),
@@ -30,7 +31,8 @@ const levels = [
             { height: 1, width: 10.5, depth: 0.2, position: [0, 0.5, 7.7], color: [1, 0.5, 0] },  
             { height: 1, width: 10.5, depth: 0.2, position: [0, 0.5, -7.7], color: [1, 0.5, 0] },  
             
-        ]
+        ],
+        moveSpeed: 2
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 4),
@@ -45,7 +47,8 @@ const levels = [
             { height: 1, width: 20.4, depth: 0.2, position: [0, 0.5, 5.1], color: [1, 0.5, 0] },   // Mur en bas
             { height: 1, width: 1.7, depth: 0.2, position: [-2, 1, 0], color: [6, 8, 1] , isMoving: true, axis: 'z', range: 5, speed: 1 }, // Mur mobile à gauche
             { height: 1, width: 1.7, depth: 0.2, position: [3, 1, 0], color: [6, 8, 1] , isMoving: true, axis: 'z', range: 5, speed: 2 }, // Mur mobile à droite
-        ]
+        ],
+        moveSpeed: 2
     },
 
 ];
