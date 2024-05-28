@@ -1,3 +1,7 @@
+import Robot from './robot.js';
+
+
+
 export default class Arena {
   constructor(scene, levelConfig) {
       this.scene = scene;
@@ -8,8 +12,12 @@ export default class Arena {
       this.groundConfig = levelConfig.ground;
       this.holeColor = levelConfig.holeColor;
       this.wallsConfig = levelConfig.walls;
-       // Initialize movingWalls array
     this.movingWalls = [];
+    this.robots = [];
+    this.levelConfig = levelConfig;
+    this.waterAreas = levelConfig.waterAreas; 
+    this.waterSpeedReduction = 0.2; 
+
   }
 
   createGround() {
@@ -33,7 +41,6 @@ export default class Arena {
         subdivisions: this.groundConfig.subdivisions,
       }, this.scene);
 
-      // Directly apply the physics impostor if there is no height map
       ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
     }
       
@@ -46,20 +53,33 @@ export default class Arena {
     const holeMaterial = new BABYLON.StandardMaterial("holeMat", this.scene);
     holeMaterial.diffuseColor = new BABYLON.Color3(...this.holeColor);
     
-    // Create the visible hole
     const hole = BABYLON.MeshBuilder.CreateCylinder("hole", { diameter: this.holeSize, height: 0.1 }, this.scene);
     hole.position = this.endPoint.clone();
     hole.material = holeMaterial;
     hole.scaling.y = 0.01;
     hole.position.y = 0.05;
 
-    // Create an impostor for the hole
     const holeImpostor = BABYLON.MeshBuilder.CreateCylinder("holeImpostor", { diameter: this.holeSize, height: 0.1 }, this.scene);
     holeImpostor.position = this.endPoint.clone();
-    holeImpostor.position.y = 0.05; // Slightly above the ground
-    holeImpostor.isVisible = false; // Make the impostor invisible
+    holeImpostor.position.y = 0.05;
+    holeImpostor.isVisible = false;
     holeImpostor.physicsImpostor = new BABYLON.PhysicsImpostor(holeImpostor, BABYLON.PhysicsImpostor.CylinderImpostor, { mass: 0, restitution: 0.9 }, this.scene);
 }
+
+createWater() {
+  this.waterAreas.forEach(area => {
+      const water = BABYLON.MeshBuilder.CreateGround("water", { width: area.width, height: area.height }, this.scene);
+      water.position.x = area.x;
+      water.position.y = area.y;
+      water.position.z = area.z; 
+
+      const waterMaterial = new BABYLON.StandardMaterial("waterMat", this.scene);
+      waterMaterial.diffuseColor = new BABYLON.Color3(0, 0, 1); 
+      waterMaterial.alpha = 0.5; 
+      water.material = waterMaterial; 
+  });
+}
+
 
 
 createWalls() {
@@ -82,6 +102,42 @@ createWalls() {
       }
   });
 }
+createRobots() {
+  if (this.levelConfig && this.levelConfig.robots) {
+    this.levelConfig.robots.forEach(robotConfig => {
+      const robot = new Robot(this.scene, robotConfig.position, robotConfig.attackRange, robotConfig.attackDamage);
+      this.robots.push(robot);
+    });
+  }
+}
+
+update() {
+  this.robots.forEach(robot => {
+    robot.update(); 
+  });
+}
+update(sphere) {
+  this.waterAreas.forEach(area => {
+      if (this.isSphereInWater(sphere, area)) {
+         
+          this.reduceSphereSpeed(sphere);
+      }
+  });
+}
+isSphereInWater(sphere, waterArea) {
+  return (
+      sphere.position.x >= waterArea.x - waterArea.width / 2 &&
+      sphere.position.x <= waterArea.x + waterArea.width / 2 &&
+      sphere.position.z >= waterArea.z - waterArea.height / 2 &&
+      sphere.position.z <= waterArea.z + waterArea.height / 2
+  );
+}
+
+reduceSphereSpeed(sphere) {
+  sphere.physicsImpostor.setLinearVelocity(
+      sphere.physicsImpostor.getLinearVelocity().scale(this.waterSpeedReduction)
+  );
+}
 
 animateMovingWalls() {
   this.movingWalls.forEach(wall => {
@@ -91,9 +147,13 @@ animateMovingWalls() {
   });
 }
 
-  generate() {
-      this.createGround();
-      this.createHole();
-      this.createWalls();
-  }
+generate() {
+  this.createGround();
+  this.createHole();
+  this.createWalls();
+  this.createRobots(); 
+  this.createWater(); 
+
+}
+
 }
