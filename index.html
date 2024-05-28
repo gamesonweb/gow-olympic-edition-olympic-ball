@@ -6,31 +6,59 @@
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
-<link rel="stylesheet" href="style.css">
+
     <style>
+        /* Reset default styles */
         html, body {
             width: 100%;
             height: 100%;
             margin: 0;
             padding: 0;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
+
+        /* Center the canvas */
         #renderCanvas {
             width: 100%;
             height: 100%;
             display: block;
         }
+
+        /* Style the player selection container */
+        #playerSelection {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        /* Style the buttons */
+        #onePlayerBtn, #twoPlayersBtn {
+            background-color: #0074D9;
+            color: #FFFFFF;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        /* Hover effect for buttons */
+        #onePlayerBtn:hover, #twoPlayersBtn:hover {
+            background-color: #005DA3;
+        }
     </style>
 </head>
 <body>
-
-    
-    <div id="playerSelection" style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+    <div id="playerSelection">
         <h2>Choisir le mode de jeu</h2>
         <button id="onePlayerBtn">1 Joueur</button>
         <button id="twoPlayersBtn">2 Joueurs</button>
     </div>
-    <canvas id="renderCanvas" touch-action="none" style="width: 100%; height: 100vh;"></canvas>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
     <script type="module" src="game.js"></script>
 </body>
 </html>
