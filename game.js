@@ -100,6 +100,8 @@ async function initGame(playerCount) {
     var endPoint = sceneData.endPoint;
 
     engine.runRenderLoop(function () {
+        let moveSpeed = levels[levelIndex].moveSpeed;
+        
         if (!isSphereFalling) {
             var forceDirection = new BABYLON.Vector3(0, 0, 0);
             if (keysPlayer1['ArrowUp']) forceDirection.z += moveSpeed;
