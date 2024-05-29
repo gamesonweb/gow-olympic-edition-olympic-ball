@@ -37,7 +37,55 @@ async function initGame(playerCount) {
 
     var keysPlayer1 = { 'ArrowUp': false, 'ArrowDown': false, 'ArrowLeft': false, 'ArrowRight': false, 'Space': false };
     var keysPlayer2 = { 'z': false, 's': false, 'q': false, 'd': false, 'Shift': false };
+    var timeLimit = levels[levelIndex].timeLimit;
+    var timeRemaining = timeLimit;
 
+    var timerElement = document.createElement('div');
+    timerElement.id = 'timer';
+    timerElement.style.position = 'absolute';
+    timerElement.style.top = '20px';
+    timerElement.style.right = '20px';
+    timerElement.style.color = '#ffffff';
+    timerElement.style.fontSize = '24px';
+    timerElement.style.fontWeight = 'bold';
+    timerElement.style.zIndex = '9999'; // Assurez-vous que le timer est au-dessus du reste du contenu
+    document.body.appendChild(timerElement);
+
+    var gameOverMessage = document.createElement('div');
+    gameOverMessage.id = 'gameOverMessage';
+    gameOverMessage.style.position = 'absolute';
+    gameOverMessage.style.top = '50%';
+    gameOverMessage.style.left = '50%';
+    gameOverMessage.style.transform = 'translate(-50%, -50%)';
+    gameOverMessage.style.backgroundColor = '#ffffff';
+    gameOverMessage.style.padding = '20px';
+    gameOverMessage.style.textAlign = 'center';
+    gameOverMessage.style.border = '2px solid #000000';
+    gameOverMessage.style.borderRadius = '10px';
+    gameOverMessage.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
+    gameOverMessage.style.display = 'none'; // Cacher le message au début
+  
+
+
+
+    var timerInterval = setInterval(function() {
+        timeRemaining--;
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            // Réinitialiser la position de la sphère
+            resetSpherePosition(sphere, startPoint);
+            if (playerCount === 2) {
+                resetSpherePosition(sphere2, startPoint2);
+            }
+            // Afficher le message de temps écoulé
+            timerElement.style.display = 'none'; // Cacher le timer
+            displayTimeUpMessage(); // Afficher le message de temps écoulé
+        }
+        // Mettre à jour l'élément HTML avec le temps restant
+        timerElement.textContent = 'Temps restant: ' + timeRemaining + 's';
+    }, 1000);
+    
+   
     function createScene(playerCount, levelConfig) {
         var scene = new BABYLON.Scene(engine);
 
@@ -58,6 +106,7 @@ async function initGame(playerCount) {
         var groundHeight = levelConfig.ground.height;
 
         var startPoint = levelConfig.startPoint;
+        var startPoint2 = levelConfig.startPoint;
         var endPoint = levelConfig.endPoint;
 
         sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
@@ -103,6 +152,8 @@ async function initGame(playerCount) {
     var groundWidth = sceneData.groundWidth;
     var groundHeight = sceneData.groundHeight;
     var startPoint = sceneData.startPoint;
+    var startPoint2 = sceneData.startPoint;
+
     var endPoint = sceneData.endPoint;
 
     async function resetSpherePosition(sphere, startPoint) {
@@ -283,6 +334,7 @@ async function initGame(playerCount) {
         nextLevelBtn.addEventListener('click', function () {
             document.body.removeChild(winMessage);
             scene.dispose();
+            // Recréer la scène avec le nouveau niveau
             sceneData = createScene(playerCount, levels[levelIndex]);
             scene = sceneData.scene;
             groundWidth = sceneData.groundWidth;
@@ -290,6 +342,32 @@ async function initGame(playerCount) {
             startPoint = sceneData.startPoint;
             endPoint = sceneData.endPoint;
             winnerDeclared = false;
+            levelIndex;
+            if (levelIndex < levels.length) {
+                // Mettre à jour le temps limite avec le temps du nouveau niveau
+                timeLimit = levels[levelIndex].timeLimit;
+                // Réinitialiser le temps restant avec le temps limite du nouveau niveau
+                timeRemaining = timeLimit;
+                // Réinitialiser le timer
+                timerElement.style.display = 'block';
+                clearInterval(timerInterval);
+                timerInterval = setInterval(function () {
+                    timeRemaining--;
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        resetSpherePosition(sphere, startPoint);
+                        if (playerCount === 2) {
+                            resetSpherePosition(sphere2, startPoint2);
+                        }
+                        timerElement.style.display = 'none';
+                        displayTimeUpMessage(); // Afficher le message de temps écoulé
+
+                    }
+                    timerElement.textContent = 'Temps restant: ' + timeRemaining + 's';
+                }, 1000);
+            } else {
+                alert('Félicitations ! Vous avez terminé tous les niveaux.');
+            }
         });
         winMessage.appendChild(nextLevelBtn);
 
@@ -312,9 +390,104 @@ async function initGame(playerCount) {
             startPoint = sceneData.startPoint;
             endPoint = sceneData.endPoint;
             winnerDeclared = false;
+            // Mettre à jour le temps limite avec le temps du nouveau niveau
+            timeLimit = levels[levelIndex].timeLimit;
+           // Réinitialiser le temps restant avec le temps limite du nouveau niveau
+           timeRemaining = timeLimit;       
+            timerElement.style.display = 'block'; // Afficher le timer
+            clearInterval(timerInterval); // Arrêter le timer actuel
+            timerInterval = setInterval(function() { // Démarrer un nouveau timer
+                timeRemaining--;
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    // Réinitialiser la position de la sphère
+                    resetSpherePosition(sphere, startPoint);
+                    if (playerCount === 2) {
+                        resetSpherePosition(sphere2, startPoint2);
+                    }
+                    // Afficher le message de temps écoulé
+                    timerElement.style.display = 'none'; // Cacher le timer
+                    displayTimeUpMessage(); // Afficher le message de temps écoulé
+                }
+                // Mettre à jour l'élément HTML avec le temps restant
+                timerElement.textContent = 'Temps restant: ' + timeRemaining + 's';
+            }, 1000);
         });
         winMessage.appendChild(restartBtn);
 
         document.body.appendChild(winMessage);
     }
+    function displayTimeUpMessage() {
+        var timeUpMessage = document.createElement('div');
+        timeUpMessage.style.position = 'absolute';
+        timeUpMessage.style.top = '50%';
+        timeUpMessage.style.left = '50%';
+        timeUpMessage.style.transform = 'translate(-50%, -50%)';
+        timeUpMessage.style.backgroundColor = '#ffffff';
+        timeUpMessage.style.padding = '20px';
+        timeUpMessage.style.textAlign = 'center';
+        timeUpMessage.style.border = '2px solid #000000';
+        timeUpMessage.style.borderRadius = '10px';
+        timeUpMessage.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
+    
+        var timeUpText = document.createElement('p');
+        timeUpText.style.fontSize = '24px';
+        timeUpText.style.fontWeight = 'bold';
+        timeUpText.style.marginBottom = '20px';
+        timeUpText.innerText = `Temps écoulé !`;
+        timeUpMessage.appendChild(timeUpText);
+    
+        var restartBtn = document.createElement('button');
+        restartBtn.style.backgroundColor = '#f44336';
+        restartBtn.style.color = '#ffffff';
+        restartBtn.style.border = 'none';
+        restartBtn.style.padding = '10px 20px';
+        restartBtn.style.fontSize = '18px';
+        restartBtn.style.cursor = 'pointer';
+        restartBtn.innerText = 'Recommencer';
+        restartBtn.addEventListener('click', function () {
+            document.body.removeChild(timeUpMessage);
+            if(levelIndex > 0){
+            levelIndex--;}
+            else{
+                levelIndex = 0;
+            }
+            scene.dispose();
+            sceneData = createScene(playerCount, levels[levelIndex]);
+            scene = sceneData.scene;
+            groundWidth = sceneData.groundWidth;
+            groundHeight = sceneData.groundHeight;
+            startPoint = sceneData.startPoint;
+            startPoint2 = sceneData.startPoint;
+            endPoint = sceneData.endPoint;
+            winnerDeclared = false;
+           // Mettre à jour le temps limite avec le temps du nouveau niveau
+           timeLimit = levels[levelIndex].timeLimit;
+           // Réinitialiser le temps restant avec le temps limite du nouveau niveau
+           timeRemaining = timeLimit; 
+            timerElement.style.display = 'block'; // Afficher le timer
+            clearInterval(timerInterval); // Arrêter le timer actuel
+            timerInterval = setInterval(function() { // Démarrer un nouveau timer
+                timeRemaining--;
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    // Réinitialiser la position de la sphère
+                    resetSpherePosition(sphere, startPoint);
+                    if (playerCount === 2) {
+                        resetSpherePosition(sphere2, startPoint2);
+                    }
+                    // Afficher le message de temps écoulé
+                    timerElement.style.display = 'none'; // Cacher le timer
+                    displayTimeUpMessage(); // Afficher le message de temps écoulé
+                }
+                // Mettre à jour l'élément HTML avec le temps restant
+                timerElement.textContent = 'Temps restant: ' + timeRemaining + 's';
+            }, 1000);
+        });
+        
+        timeUpMessage.appendChild(restartBtn);
+    
+        document.body.appendChild(timeUpMessage);
+    }
+    
 }
