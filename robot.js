@@ -5,6 +5,10 @@ export default class Robot {
         this.attackDamage = attackDamage;
         this.mesh = BABYLON.MeshBuilder.CreateSphere("robot", { diameter: 1 }, this.scene);
         this.mesh.position = position;
+        // ajouter une couleur aléatoire
+        this.mesh.material = new BABYLON.StandardMaterial("robotMaterial", this.scene);
+        this.mesh.material.diffuseColor = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+        
         this.physicsBody = this.createPhysicsBody();
 
         this.initialPosition = position.clone(); 
