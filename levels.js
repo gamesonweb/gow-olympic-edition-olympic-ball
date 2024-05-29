@@ -1,7 +1,24 @@
 
 
 const levels = [
-   
+    {
+        startPoint: new BABYLON.Vector3(-5, 0.5, 0),
+        endPoint: new BABYLON.Vector3(6, 0.1, ),
+        holeSize: 1.0,
+        ground: { width: 20, height: 4, subdivisions: 0, minHeight: 0, maxHeight: 0.01 },
+        holeColor: [0, 0, 0],
+        walls: [
+            { height: 1, width: 1, depth: 3, position: [-2, 0.5, 0], color: [1, 0.5, 0] },
+            { height: 2.5, width: 1, depth: 3, position: [-0.5, 0.5, 0], color: [1, 0.5, 0] },
+            { height: 4, width: 1, depth: 3, position: [1, 0.5, 0], color: [1, 0.5, 0] },
+            { height: 5.5, width: 1, depth: 3, position: [2.5, 0.5, 0], color: [1, 0.5, 0] },
+            { height: 7, width: 1, depth: 3, position: [4, 0.5, 0], color: [1, 0.5, 0] },
+        ],
+        moveSpeed: 2,
+        waterAreas: [],
+        timeLimit: 90
+    },
+    
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 5),
         endPoint: new BABYLON.Vector3(10 / 3, 1, -5),
