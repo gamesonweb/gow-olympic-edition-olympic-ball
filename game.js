@@ -3,20 +3,182 @@ import levels from './levels.js';
 
 document.getElementById("onePlayerBtn").addEventListener("click", function () {
     document.getElementById("playerSelection").style.display = "none";
-    initGame(1).catch(console.error);
+    showModelSelection(1); // Call showModelSelection instead of initGame directly
 });
 
 document.getElementById("twoPlayersBtn").addEventListener("click", function () {
     document.getElementById("playerSelection").style.display = "none";
-    initGame(2).catch(console.error);
+    showModelSelection(2); // Call showModelSelection instead of initGame directly
 });
 
 let ammoLoaded = Ammo().then(function (AmmoLib) {
     window.Ammo = AmmoLib;
 });
+const materialProperties = {
+    water: {
+        metallic: 0.33,
+        roughness: 0.12,
+        albedoTexture: 'Water_001_COLOR.jpg',
+        metallicTexture: 'Water_001_SPEC.jpg',
+        bumpTexture: 'Water_001_NORM.jpg',
+        ambientTexture: 'Water_001_OCC.jpg',
+        albedoColor: BABYLON.Color3.Blue(),
+        bumpTextureLevel: 2,
+        invertNormalMapX: true,
+        invertNormalMapY: true,
+        invertRefractionY: true,
+        indexOfRefraction: 4.2,
+        alpha: 1
+    },
+    volcano: {
+        metallic: 0.7,
+        roughness: 0.32,
+        albedoTexture: '07/37/73/79/1000_F_737737956_FEC3ihNTNmznhFnJB4HozkVdhfrEBtiQ.jpg',
+        metallicTexture: '04/33/68/69/1000_F_433686994_9wqTWijo5Ct2su4H1hq4zmWH7pAoLLIL.jpg',
+        bumpTexture: '04/91/57/72/1000_F_491577222_UATRWMuQ6xrss6iKUXgB78bwxA0NHfzT.jpg',
+        ambientTexture: '07/74/90/19/1000_F_774901967_BHKc5lvYqgt6ogCVx0MkqUAAfWGSQDt6.jpg',
+        // color de volcan
+        albedoColor: BABYLON.Color3.Red(),
+        bumpTextureLevel: 2,
+        invertNormalMapX: true,
+        invertNormalMapY: true,
+        invertRefractionY: true,
+        indexOfRefraction: 4.2,
+        alpha: 1    },
+    grass: {
+        metallic: 0.1,
+        roughness: 0.32,
+        albedoTexture: '06/02/83/14/1000_F_602831480_BxaatSPVp0QD2ydhak6BUjg5TNhLtICP.jpg',
+        metallicTexture: '06/87/96/06/1000_F_687960665_Fir3IWkC2bMOov8RztXSzkAPnnjgeoYo.jpg',
+        bumpTexture: '05/27/27/32/1000_F_527273218_s8uRtW7BrVe6QLyoQI8WveeoGVrYdJ8f.jpg',
+        ambientTexture: '07/09/16/76/1000_F_709167618_PHf6KXAXcfB5dYxioDqQTHENbgqf9Vb3.jpg',
+        // color de space
+        albedoColor: new BABYLON.Color3(0.1, 0.1, 0.9),
+        bumpTextureLevel: 8,
+        invertNormalMapX: true,
+        invertNormalMapY: true,
+        invertRefractionY: true,
+        indexOfRefraction: 6,
+        alpha: 1     },
+    rock: {
+        metallic: 0.1,
+        roughness: 0.32,
+        albedoTexture: '07/05/64/83/1000_F_705648371_jvpv6r6okTpOYvTYIhElW1H6RTRe6Le9.jpg',
+        metallicTexture: '07/05/64/83/1000_F_705648371_jvpv6r6okTpOYvTYIhElW1H6RTRe6Le9.jpg',
+        bumpTexture: '07/05/64/83/1000_F_705648371_jvpv6r6okTpOYvTYIhElW1H6RTRe6Le9.jpg',
+        ambientTexture: '07/05/64/83/1000_F_705648371_jvpv6r6okTpOYvTYIhElW1H6RTRe6Le9.jpg',
+        // color de volcan
+        albedoColor: new BABYLON.Color3(0.2, 0.15, 0.05),
+        bumpTextureLevel: 8,
+        invertNormalMapX: true,
+        invertNormalMapY: true,
+        invertRefractionY: true,
+        indexOfRefraction: 9,
+        alpha: 1     }
+};
 
 let arena;
-async function initGame(playerCount) {
+document.addEventListener("DOMContentLoaded", function () {
+    const spheres = {
+        water: "canvas-water",
+        volcano: "canvas-volcano",
+        grass: "canvas-grass",
+        rock: "canvas-rock"
+    };
+
+    Object.keys(spheres).forEach(key => {
+        const canvasId = spheres[key];
+        const canvas = document.getElementById(canvasId);
+        if (canvas) {
+            createPreviewSphere(canvas, key);
+        }
+    });
+
+    function createPreviewSphere(canvas, model) {
+        const engine = new BABYLON.Engine(canvas, true);
+        const scene = new BABYLON.Scene(engine);
+        scene.createDefaultCameraOrLight(true, true, true);
+        const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {}, scene);
+        const mat = new BABYLON.PBRMaterial("sphereMat", scene);
+    
+        switch (model) {
+            case 'water':
+                applyMaterialProperties(mat, materialProperties.water , 'https://playgrounds.babylonjs.xyz/glass-ball/');
+                break;
+            case 'volcano':
+                applyMaterialProperties(mat, materialProperties.volcano , 'https://as2.ftcdn.net/v2/jpg/');
+                break;
+            case 'grass':
+                applyMaterialProperties(mat, materialProperties.grass , 'https://as2.ftcdn.net/v2/jpg/');
+                break;
+            case 'rock':
+                applyMaterialProperties(mat, materialProperties.rock , 'https://as2.ftcdn.net/v2/jpg/');
+                break;
+        }
+    
+        sphere.material = mat;
+    
+        engine.runRenderLoop(() => {
+            scene.render();
+        });
+    
+        window.addEventListener("resize", () => {
+            engine.resize();
+        });
+    }
+});
+
+function showModelSelection(playerCount) {
+    document.getElementById("modelSelection").style.display = "block";
+    let selectedModels = [];
+    const sphereOptions = document.querySelectorAll('.sphere-option');
+
+    sphereOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            const model = this.getAttribute('data-model');
+            selectedModels.push(model);
+            if (selectedModels.length === playerCount) {
+                document.getElementById("modelSelection").style.display = "none";
+                initGame(playerCount, selectedModels).catch(console.error);
+            }
+        });
+    });
+}
+function applyMaterialProperties(material, properties , baseUrl) {
+    material.metallic = properties.metallic;
+    material.roughness = properties.roughness;
+    material.albedoTexture = new BABYLON.Texture(`${baseUrl}${properties.albedoTexture}`);
+    material.metallicTexture = new BABYLON.Texture(`${baseUrl}${properties.metallicTexture}`);
+    material.bumpTexture = new BABYLON.Texture(`${baseUrl}${properties.bumpTexture}`);
+    material.ambientTexture = new BABYLON.Texture(`${baseUrl}${properties.ambientTexture}`);
+    material.albedoColor = properties.albedoColor;
+    material.bumpTexture.level = properties.bumpTextureLevel;
+    material.invertNormalMapX = properties.invertNormalMapX;
+    material.invertNormalMapY = properties.invertNormalMapY;
+    material.invertRefractionY = properties.invertRefractionY;
+    material.indexOfRefraction = properties.indexOfRefraction;
+    material.alpha = properties.alpha;
+}
+function applyTextureToSphere(sphere, model) {
+    const mat = new BABYLON.PBRMaterial("sphereMat");
+    switch (model) {
+        case 'water':
+            applyMaterialProperties(mat, materialProperties.water, 'https://playgrounds.babylonjs.xyz/glass-ball/');
+            break;
+        case 'volcano':
+            applyMaterialProperties(mat, materialProperties.volcano, 'https://as2.ftcdn.net/v2/jpg/');
+            break;
+        case 'grass':
+            applyMaterialProperties(mat, materialProperties.grass, 'https://as2.ftcdn.net/v2/jpg/');
+            break;
+        case 'rock':
+            applyMaterialProperties(mat, materialProperties.rock, 'https://as2.ftcdn.net/v2/jpg/');
+            break;
+    }
+    
+    sphere.material = mat;
+}
+async function initGame(playerCount, selectedModels) {
     await ammoLoaded;
 
     var canvas = document.getElementById('renderCanvas');
@@ -27,7 +189,7 @@ async function initGame(playerCount) {
     var isSphereFalling = false;
     var isSphere1Airborne = false;
     var isSphere2Airborne = false;
-    var maxJumpHeight = 0.5;
+    var maxJumpHeight = 8;
     var levelIndex = 0;
     var winnerDeclared = false;
     var winningPlayer = null;
@@ -109,9 +271,11 @@ async function initGame(playerCount) {
         var startPoint2 = levelConfig.startPoint;
         var endPoint = levelConfig.endPoint;
 
-        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
-        sphere.position = startPoint;
-        sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+       // Création des sphères avec les textures sélectionnées
+       sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
+       sphere.position = startPoint;
+       sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+       applyTextureToSphere(sphere, selectedModels[0]);
 
         if (playerCount === 2) {
             var startPoint2 = new BABYLON.Vector3(
@@ -122,6 +286,7 @@ async function initGame(playerCount) {
             sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 0.75, scene);
             sphere2.position = startPoint2;
             sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+            applyTextureToSphere(sphere2, selectedModels[1]);
 
             // Camera for player 1
             camera1 = new BABYLON.FreeCamera('camera1', new BABYLON.Vector3(0, 5, -10), scene);
@@ -147,12 +312,14 @@ async function initGame(playerCount) {
         return { scene, groundWidth, groundHeight, startPoint, endPoint };
     }
 
+    
     var sceneData = createScene(playerCount, levels[levelIndex]);
     var scene = sceneData.scene;
     var groundWidth = sceneData.groundWidth;
     var groundHeight = sceneData.groundHeight;
     var startPoint = sceneData.startPoint;
     var startPoint2 = sceneData.startPoint;
+    var endPoint = sceneData.endPoint;
 
     var endPoint = sceneData.endPoint;
 
@@ -204,7 +371,7 @@ async function initGame(playerCount) {
             var jumpForce = new BABYLON.Vector3(0, 5, 0);
             sphere.physicsImpostor.applyImpulse(jumpForce, sphere.getAbsolutePosition());
             isSphere1Airborne = true;
-            setTimeout(() => isSphere1Airborne = false, 500);
+            setTimeout(() => isSphere1Airborne = false, 2000);
         }
 
         if (playerCount === 2 && keysPlayer2['Shift'] && !isSphere2Airborne && sphere2.position.y < maxJumpHeight) {
@@ -258,10 +425,10 @@ async function initGame(playerCount) {
         if (event.key in keysPlayer2) {
             keysPlayer2[event.key] = true;
         }
-        // Add condition for space key
-        if (event.code === 'Space') {
-            keysPlayer1['Space'] = true;
-        }
+        // Ajoutez une condition pour vérifier si la sphère est en l'air avant de permettre le saut
+    if (event.code === 'Space' && !isSphere1Airborne) {
+        keysPlayer1['Space'] = true;
+    }
     });
 
     window.addEventListener('keyup', function (event) {
@@ -271,8 +438,7 @@ async function initGame(playerCount) {
         if (event.key in keysPlayer2) {
             keysPlayer2[event.key] = false;
         }
-        // Add condition for space key
-        if (event.code === 'Space') {
+        if (event.code === 'Space' && isSphere1Airborne) {
             keysPlayer1['Space'] = false;
         }
     });
@@ -341,6 +507,10 @@ async function initGame(playerCount) {
             groundHeight = sceneData.groundHeight;
             startPoint = sceneData.startPoint;
             endPoint = sceneData.endPoint;
+            applyTextureToSphere(sphere, selectedModels[0]);
+            if(playerCount === 2){
+                applyTextureToSphere(sphere2, selectedModels[1]);
+            }
             winnerDeclared = false;
             levelIndex;
             if (levelIndex < levels.length) {
@@ -389,6 +559,10 @@ async function initGame(playerCount) {
             groundHeight = sceneData.groundHeight;
             startPoint = sceneData.startPoint;
             endPoint = sceneData.endPoint;
+            applyTextureToSphere(sphere, selectedModels[0]);
+            if(playerCount === 2){
+                applyTextureToSphere(sphere2, selectedModels[1]);
+            }
             winnerDeclared = false;
             // Mettre à jour le temps limite avec le temps du nouveau niveau
             timeLimit = levels[levelIndex].timeLimit;
@@ -460,6 +634,10 @@ async function initGame(playerCount) {
             startPoint = sceneData.startPoint;
             startPoint2 = sceneData.startPoint;
             endPoint = sceneData.endPoint;
+            applyTextureToSphere(sphere, selectedModels[0]);
+            if(playerCount === 2){
+                applyTextureToSphere(sphere2, selectedModels[1]);
+            }
             winnerDeclared = false;
            // Mettre à jour le temps limite avec le temps du nouveau niveau
            timeLimit = levels[levelIndex].timeLimit;

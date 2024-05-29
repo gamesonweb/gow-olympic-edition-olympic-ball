@@ -50,6 +50,23 @@
         #onePlayerBtn:hover, #twoPlayersBtn:hover {
             background-color: #005DA3;
         }
+        /* Ajoutez ceci dans votre fichier CSS pour styliser l'interface de sélection */
+#modelSelection {
+    text-align: center;
+    margin: 20px;
+}
+.sphere-option {
+    display: inline-block;
+    margin: 10px;
+    cursor: pointer;
+}
+.sphere-option img {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #000;
+    border-radius: 50%;
+}
+
     </style>
 </head>
 <body>
@@ -58,6 +75,13 @@
         <button id="onePlayerBtn">1 Joueur</button>
         <button id="twoPlayersBtn">2 Joueurs</button>
     </div>
+ <div id="modelSelection" style="display: none;">
+    <canvas class="sphere-option" data-model="water" id="canvas-water"></canvas>
+    <canvas class="sphere-option" data-model="volcano" id="canvas-volcano"></canvas>
+    <canvas class="sphere-option" data-model="grass" id="canvas-grass"></canvas>
+    <canvas class="sphere-option" data-model="rock" id="canvas-rock"></canvas>
+</div>
+
     <canvas id="renderCanvas" touch-action="none"></canvas>
     <script type="module" src="game.js"></script>
 </body>
