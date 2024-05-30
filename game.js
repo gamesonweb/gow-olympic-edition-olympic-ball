@@ -336,12 +336,14 @@ async function initGame(playerCount, selectedModels) {
     engine.runRenderLoop(async function () {
         let moveSpeed = levels[levelIndex].moveSpeed;
         arena.robots.forEach(robot => {
-            // Check the player's position relative to each robot
-            robot.update(sphere.position); 
-            if (playerCount === 2) {
-                robot.update(sphere2.position);
+            if (sphere2) {
+                robot.update(sphere.position, sphere2.position);
+            } else {
+                robot.update(sphere.position);
             }
         });
+        
+        
         // Check for collision with water zones
         arena.update(sphere); 
         if (playerCount === 2) {
@@ -419,6 +421,11 @@ async function initGame(playerCount, selectedModels) {
     });
 
     window.addEventListener('keydown', function (event) {
+        if (timeRemaining <= 0) {
+            // Bloquer l'action si le temps est écoulé
+            event.preventDefault();
+            return;
+        }
         if (event.key in keysPlayer1) {
             keysPlayer1[event.key] = true;
         }
@@ -449,7 +456,8 @@ async function initGame(playerCount, selectedModels) {
         if ((BABYLON.Vector3.Distance(sphere.position, endPoint)) < winThreshold && !winnerDeclared) {
             winnerDeclared = true;
             winningPlayer = playerNumber;
-
+            // Arrêter le timer
+            clearInterval(timerInterval)
             sphere.physicsImpostor.dispose();
 
             BABYLON.Animation.CreateAndStartAnimation('fall', sphere, 'position', 60, 30, sphere.position, endPoint, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
