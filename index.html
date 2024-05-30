@@ -25,17 +25,24 @@
             display: block;
         }
 
-        /* Style the player selection container */
-        #playerSelection {
+        /* Style the start page container */
+        #startPage, #playerSelection, #modelSelection {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
+            z-index: 999; /* Ensure it's on top */
+            display: none; /* Hide initially */
+        }
+
+        /* Make startPage visible initially */
+        #startPage {
+            display: block;
         }
 
         /* Style the buttons */
-        #onePlayerBtn, #twoPlayersBtn {
+        button {
             background-color: #0074D9;
             color: #FFFFFF;
             border: none;
@@ -47,42 +54,73 @@
         }
 
         /* Hover effect for buttons */
-        #onePlayerBtn:hover, #twoPlayersBtn:hover {
+        button:hover {
             background-color: #005DA3;
         }
-        /* Ajoutez ceci dans votre fichier CSS pour styliser l'interface de sélection */
-#modelSelection {
-    text-align: center;
-    margin: 20px;
-}
-.sphere-option {
-    display: inline-block;
-    margin: 10px;
-    cursor: pointer;
-}
-.sphere-option img {
-    width: 100px;
-    height: 100px;
-    border: 2px solid #000;
-    border-radius: 50%;
-}
 
+        /* Style the sphere options */
+        .sphere-option {
+            display: inline-block;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .sphere-option canvas {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #000;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
+    <div id="startPage">
+        <h1>Olympic-ball</h1>
+        <button id="startBtn">Jouer</button>
+        <button id="creditsBtn">Crédits</button>
+    </div>
+
     <div id="playerSelection">
         <h2>Choisir le mode de jeu</h2>
         <button id="onePlayerBtn">1 Joueur</button>
         <button id="twoPlayersBtn">2 Joueurs</button>
     </div>
- <div id="modelSelection" style="display: none;">
-    <canvas class="sphere-option" data-model="water" id="canvas-water"></canvas>
-    <canvas class="sphere-option" data-model="volcano" id="canvas-volcano"></canvas>
-    <canvas class="sphere-option" data-model="grass" id="canvas-grass"></canvas>
-    <canvas class="sphere-option" data-model="rock" id="canvas-rock"></canvas>
-</div>
+
+    <div id="modelSelection">
+        <canvas class="sphere-option" data-model="water" id="canvas-water"></canvas>
+        <canvas class="sphere-option" data-model="volcano" id="canvas-volcano"></canvas>
+        <canvas class="sphere-option" data-model="grass" id="canvas-grass"></canvas>
+        <canvas class="sphere-option" data-model="rock" id="canvas-rock"></canvas>
+    </div>
 
     <canvas id="renderCanvas" touch-action="none"></canvas>
     <script type="module" src="game.js"></script>
+
+    <script>
+        document.getElementById('startBtn').addEventListener('click', function() {
+            document.getElementById('startPage').style.display = 'none';
+            document.getElementById('playerSelection').style.display = 'block';
+        });
+
+        document.getElementById('onePlayerBtn').addEventListener('click', function() {
+            document.getElementById('playerSelection').style.display = 'none';
+            document.getElementById('modelSelection').style.display = 'block';
+        });
+
+        document.getElementById('twoPlayersBtn').addEventListener('click', function() {
+            document.getElementById('playerSelection').style.display = 'none';
+            document.getElementById('modelSelection').style.display = 'block';
+        });
+
+        // Add event listeners for the model selection if needed
+        const models = document.querySelectorAll('.sphere-option');
+        models.forEach(model => {
+            model.addEventListener('click', function() {
+                const selectedModel = this.getAttribute('data-model');
+                console.log('Selected model:', selectedModel);
+                // Implement further actions based on the selected model
+            });
+        });
+    </script>
 </body>
 </html>

@@ -30,23 +30,40 @@ export default class Robot {
     }
     
 
-    update(playerPosition) {
-        const distance = BABYLON.Vector3.Distance(this.mesh.position, playerPosition);
+    update(player1Position, player2Position) {
+        let closestPlayerPosition;
+        if (player2Position === undefined) {
+            closestPlayerPosition = player1Position;
+        } else {
+            const distanceToPlayer1 = BABYLON.Vector3.Distance(this.mesh.position, player1Position);
+            const distanceToPlayer2 = BABYLON.Vector3.Distance(this.mesh.position, player2Position);
+            
+            if (distanceToPlayer1 < distanceToPlayer2) {
+                closestPlayerPosition = player1Position;
+            } else {
+                closestPlayerPosition = player2Position;
+            }
+        }
+    
+        const distance = BABYLON.Vector3.Distance(this.mesh.position, closestPlayerPosition);
+        
         if (distance <= this.attackRange && !this.attacking && Date.now() - this.lastAttackTime >= this.attackCooldown) {
             const distanceFromInitialPosition = BABYLON.Vector3.Distance(this.mesh.position, this.initialPosition);
             if (distanceFromInitialPosition > this.attackRange){
                 const directionToInitialPosition = this.initialPosition.subtract(this.mesh.position);
                 directionToInitialPosition.normalize();
                 this.move(directionToInitialPosition);
-            }else{
-            const direction = playerPosition.subtract(this.mesh.position);
-            direction.normalize();
-            this.move(direction);
+            } else {
+                const direction = closestPlayerPosition.subtract(this.mesh.position);
+                direction.normalize();
+                this.move(direction);
             }
         } else {
-                this.physicsBody.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
+            this.physicsBody.setLinearVelocity(new BABYLON.Vector3(0, 0, 0));
         }
     }
+    
+    
 
     move(direction) {
         const velocity = direction.scale(this.moveSpeed);
