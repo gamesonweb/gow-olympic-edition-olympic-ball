@@ -77,6 +77,19 @@ const materialProperties = {
         alpha: 1     }
 };
 
+function addMiddleLine() {
+    var middleLine = document.createElement('div');
+    middleLine.id = 'middleLine';
+    middleLine.style.position = 'absolute';
+    middleLine.style.top = '0';
+    middleLine.style.left = '50%';
+    middleLine.style.width = '4px';
+    middleLine.style.height = '100%';
+    middleLine.style.backgroundColor = 'black';
+    middleLine.style.zIndex = '9999'; // Assurez-vous que la ligne est au-dessus du reste du contenu
+    document.body.appendChild(middleLine);
+}
+
 let arena;
 document.addEventListener("DOMContentLoaded", function () {
     const spheres = {
@@ -185,11 +198,9 @@ async function initGame(playerCount, selectedModels) {
     var engine = new BABYLON.Engine(canvas, true);
 
     var sphere, sphere2, camera;
-    var moveSpeed = 2;
     var isSphereFalling = false;
     var isSphere1Airborne = false;
     var isSphere2Airborne = false;
-    var maxJumpHeight = 8;
     var levelIndex = 0;
     var winnerDeclared = false;
     var winningPlayer = null;
@@ -226,10 +237,11 @@ async function initGame(playerCount, selectedModels) {
     gameOverMessage.style.borderRadius = '10px';
     gameOverMessage.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
     gameOverMessage.style.display = 'none'; // Cacher le message au début
-  
 
-
-
+    if (playerCount === 2) {
+        addMiddleLine();
+    }
+    
     var timerInterval = setInterval(function() {
         timeRemaining--;
         if (timeRemaining <= 0) {
@@ -335,6 +347,7 @@ async function initGame(playerCount, selectedModels) {
 
     engine.runRenderLoop(async function () {
         let moveSpeed = levels[levelIndex].moveSpeed;
+        let maxJumpHeight = levels[levelIndex].maxJumpHeight;
         arena.robots.forEach(robot => {
             if (sphere2) {
                 robot.update(sphere.position, sphere2.position);
@@ -380,7 +393,7 @@ async function initGame(playerCount, selectedModels) {
             var jumpForce2 = new BABYLON.Vector3(0, 5, 0);
             sphere2.physicsImpostor.applyImpulse(jumpForce2, sphere2.getAbsolutePosition());
             isSphere2Airborne = true;
-            setTimeout(() => isSphere2Airborne = false, 500);
+            setTimeout(() => isSphere2Airborne = false, 2000);
         }
 
         if (playerCount === 2) {

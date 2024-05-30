@@ -18,7 +18,8 @@ const levels = [
         ],
         moveSpeed: 2,
         waterAreas: [],
-        timeLimit: 10
+        timeLimit: 10,
+        maxJumpHeight:1,
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 0),
@@ -35,7 +36,8 @@ const levels = [
         ],
         moveSpeed: 2,
         waterAreas: [],
-        timeLimit: 90
+        timeLimit: 90,
+        maxJumpHeight:0.2,
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 7),
@@ -57,7 +59,8 @@ const levels = [
         ],
         moveSpeed: 10,
         waterAreas: [],
-        timeLimit: 30
+        timeLimit: 30,
+        maxJumpHeight:0.2,
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 4),
@@ -79,7 +82,8 @@ const levels = [
         ],
         moveSpeed: 2,
         waterAreas: [],
-        timeLimit: 20
+        timeLimit: 20,
+        maxJumpHeight:0.2,
 
     },
     {
@@ -109,9 +113,8 @@ const levels = [
 
         ],
         waterAreas: [],
-        timeLimit: 50
-
-
+        timeLimit: 50,
+        maxJumpHeight:0.2,
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 7),
@@ -158,7 +161,8 @@ const levels = [
             { x: -1, y: 0.1, z: -3, width: 1, height: 2 },
             { x: 2, y: 0.1, z: -8.3, width: 1, height: 3 },
         ],
-        timeLimit: 30
+        timeLimit: 30,
+        maxJumpHeight:0.2,
     },
     {
         startPoint: new BABYLON.Vector3(-5, 0.5, 4),
@@ -192,10 +196,8 @@ const levels = [
             { x: -3, y: 0.1, z: -3, width: 2, height: 3 },
             { x: 1, y: 0.1, z: 0, width: 2, height: 3 },
         ],
-        timeLimit: 60
-
-
-
+        timeLimit: 60,
+        maxJumpHeight:0.2,
     },
     {
         startPoint: new BABYLON.Vector3(-11, 0.5, 9),
@@ -248,7 +250,8 @@ const levels = [
             
         ],
         waterAreas: [],
-        timeLimit: 60
+        timeLimit: 60,
+        maxJumpHeight:0.2,
     },
     {
         startPoint: new BABYLON.Vector3(-28, 0.5, 28),
@@ -337,7 +340,8 @@ const levels = [
 
         ],
         waterAreas: [],
-        timeLimit: 300
+        timeLimit: 300,
+        maxJumpHeight:0.2,
     },
 ];
 
