@@ -215,6 +215,15 @@ models.forEach(model => {
         // Implement further actions based on the selected model
     });
 });
+// Fonction pour jouer la musique automatiquement
+function playBackgroundMusic() {
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    backgroundMusic.play();
+}
+
+// Écouteur d'événement pour jouer la musique lorsque la page est chargée
+window.addEventListener('load', playBackgroundMusic);
+
 </script>
 </body>
 </html>

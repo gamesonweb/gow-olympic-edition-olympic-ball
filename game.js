@@ -393,7 +393,11 @@ async function initGame(playerCount, selectedModels) {
             }
         });
         
-        
+        camera.detachControl(canvas);
+        if (playerCount === 2) {
+        camera1.detachControl(canvas);
+        camera2.detachControl(canvas);
+        }
         // Check for collision with water zones
         arena.update(sphere); 
         if (playerCount === 2) {
