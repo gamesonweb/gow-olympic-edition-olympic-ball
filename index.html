@@ -84,6 +84,8 @@
 <body>
     <audio id="bookOpeningSound" src="son.mp3"></audio> 
     <audio id="ballSound" src="ball.mp3"></audio> 
+    <audio id="backgroundMusic" src="hxh.mp3" loop autoplay></audio>
+
     <div id="startPage">
         <h1>Olympic-ball</h1>
         <button class="button" id="startBtn">Jouer</button>
@@ -106,6 +108,7 @@
         <canvas class="sphere-option" data-model="volcano" id="canvas-volcano"></canvas>
         <canvas class="sphere-option" data-model="grass" id="canvas-grass"></canvas>
         <canvas class="sphere-option" data-model="rock" id="canvas-rock"></canvas>
+        <div id="playerName" style="margin-top: 20px; font-size: 24px; color: #333;"></div>
     </div>
     <div id="creditsPage">
             <h2>Crédits</h2>
@@ -116,7 +119,11 @@
             <button class="button" id="closeCreditsBtn">Fermer</button>
     </div>
         
-        
+    <div id="musicIcon" style="position: fixed; bottom: 10px; right: 10px; cursor: pointer;">
+        <img id="musicImage" src="music-note-33-1.png" alt="Music Icon" width="40" height="40">
+    </div>
+    
+     
     <canvas id="renderCanvas" touch-action="none"></canvas>
     <script type="module" src="game.js"></script>
     
@@ -143,68 +150,71 @@
         }
 
         document.getElementById('startBtn').addEventListener('click', function() {
-            document.getElementById('ballSound').play();
-            animateSectionHide(document.getElementById('startPage'));
-            animateSectionShow(document.getElementById('playerSelection'));
-        });
-
-        document.getElementById('onePlayerBtn').addEventListener('click', function() {
-            document.getElementById('ballSound').play();
-            animateSectionHide(document.getElementById('playerSelection'));
-            animateSectionHide(document.getElementById('modelSelection'));
-            // Afficher le message de contrôle du joueur 1
-            animateSectionShow(document.getElementById('controlMessage'));
-           // Mettre à jour les instructions pour un joueur
-document.getElementById('controlMessage').querySelector('p').innerText = "Instructions pour contrôler le joueur 1 \n" + 
-"Déplacement : Flèches Haut / Bas / Gauche / Droite \n" +
-    "Sauter : Barre d'espace" ;
+    document.getElementById('ballSound').play();
+    animateSectionHide(document.getElementById('startPage'));
+    animateSectionShow(document.getElementById('playerSelection'));
 });
-document.getElementById('twoPlayersBtn').addEventListener('click', function() {
-        document.getElementById('ballSound').play();
-        animateSectionHide(document.getElementById('playerSelection'));
-        // Afficher le message de contrôle des joueurs
-        animateSectionShow(document.getElementById('controlMessage'));
-        // Mettre à jour les instructions pour deux joueurs
-        document.getElementById('controlMessage').querySelector('p').innerText = "Instructions pour contrôler le joueur 1 et le joueur 2 \n" +
-        "Joueur 1 : \n" +
+
+document.getElementById('onePlayerBtn').addEventListener('click', function() {
+    document.getElementById('ballSound').play();
+    animateSectionHide(document.getElementById('playerSelection'));
+    animateSectionHide(document.getElementById('modelSelection'));
+    // Afficher le message de contrôle du joueur 1
+    animateSectionShow(document.getElementById('controlMessage'));
+    // Mettre à jour les instructions pour un joueur
+    document.getElementById('controlMessage').querySelector('p').innerText = "Instructions pour contrôler le joueur 1 \n" + 
     "Déplacement : Flèches Haut / Bas / Gauche / Droite \n" +
-    "Sauter : Barre d'espace" +
-     "Joueur 2 : \n" +
-     "Déplacement : Z / S / Q / D \n" +
+    "Sauter : Barre d'espace";
+});
+
+document.getElementById('twoPlayersBtn').addEventListener('click', function() {
+    document.getElementById('ballSound').play();
+    animateSectionHide(document.getElementById('playerSelection'));
+    // Afficher le message de contrôle des joueurs
+    animateSectionShow(document.getElementById('controlMessage'));
+    // Mettre à jour les instructions pour deux joueurs
+    document.getElementById('controlMessage').querySelector('p').innerText = "Instructions pour contrôler le joueur 1 et le joueur 2 \n" +
+    "Joueur 1 : \n" +
+    "Déplacement : Flèches Haut / Bas / Gauche / Droite \n" +
+    "Sauter : Barre d'espace \n" +
+    "Joueur 2 : \n" +
+    "Déplacement : Z / S / Q / D \n" +
     "Sauter : Majuscule (Shift)";
-    });
+});
 
-    document.getElementById('nextBtn').addEventListener('click', function() {
-        document.getElementById('ballSound').play();
-        animateSectionHide(document.getElementById('controlMessage'));
-        // Retirer la classe blur pour restaurer le fond
-        document.documentElement.classList.remove('blur');
-        animateSectionShow(document.getElementById('modelSelection'));
-    });
+document.getElementById('nextBtn').addEventListener('click', function() {
+    document.getElementById('ballSound').play();
+    animateSectionHide(document.getElementById('controlMessage'));
+    // Retirer la classe blur pour restaurer le fond
+    document.documentElement.classList.remove('blur');
+    animateSectionShow(document.getElementById('modelSelection'));
+});
 
-    document.getElementById('creditsBtn').addEventListener('click', function() {
-        // Jouer le son du livre qui s'ouvre
-        document.getElementById('bookOpeningSound').play();
-        
-        animateSectionHide(document.getElementById('startPage'));
-        animateSectionShow(document.getElementById('creditsPage'));
-    });
+document.getElementById('creditsBtn').addEventListener('click', function() {
+    // Jouer le son du livre qui s'ouvre
+    document.getElementById('bookOpeningSound').play();
+    
+    animateSectionHide(document.getElementById('startPage'));
+    animateSectionShow(document.getElementById('creditsPage'));
+});
 
-    document.getElementById('closeCreditsBtn').addEventListener('click', function() {
-        document.getElementById('bookOpeningSound').play();
-        animateSectionHide(document.getElementById('creditsPage'));
-        animateSectionShow(document.getElementById('startPage'));
-    });
+document.getElementById('closeCreditsBtn').addEventListener('click', function() {
+    document.getElementById('bookOpeningSound').play();
+    animateSectionHide(document.getElementById('creditsPage'));
+    animateSectionShow(document.getElementById('startPage'));
+});
 
-    // Add event listeners for the model selection
-    const models = document.querySelectorAll('.sphere-option');
-    models.forEach(model => {
-        model.addEventListener('click', function() {
-            const selectedModel = this.getAttribute('data-model');
-            console.log('Selected model:', selectedModel);
-            // Implement further actions based on the selected model
-        });
+// Add event listeners for the model selection
+const models = document.querySelectorAll('.sphere-option');
+models.forEach(model => {
+    model.addEventListener('click', function() {
+        const selectedModel = this.getAttribute('data-model');
+        console.log('Selected model:', selectedModel);
+        // Afficher le nom du joueur sous la sphère
+        document.getElementById('playerName').innerText = "joueur 1 : "+ selectedModel;
+        // Implement further actions based on the selected model
     });
+});
 </script>
 </body>
 </html>

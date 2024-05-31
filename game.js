@@ -10,6 +10,29 @@ document.getElementById("twoPlayersBtn").addEventListener("click", function () {
     document.getElementById("playerSelection").style.display = "none";
     showModelSelection(2); // Call showModelSelection instead of initGame directly
 });
+// Récupérez l'élément de l'icône de musique
+const musicIcon = document.getElementById("musicIcon");
+// Récupérez l'élément de l'image de musique
+const musicImage = document.getElementById("musicImage");
+document.getElementById('backgroundMusic').volume = 0.4;
+
+
+
+// Ajoutez un gestionnaire d'événements pour détecter les clics sur l'icône de musique
+musicIcon.addEventListener("click", function() {
+    // Vérifiez si la musique est actuellement en lecture
+    if (backgroundMusic.paused) {
+        // Si la musique est en pause, reprenez la lecture
+        backgroundMusic.play();
+        // Mettez à jour l'icône de musique pour afficher "musique activée"
+        musicImage.src = "music-note-33-1.png";
+    } else {
+        // Sinon, mettez la musique en pause
+        backgroundMusic.pause();
+        // Mettez à jour l'icône de musique pour afficher "musique désactivée"
+        musicImage.src = "music-note-33-1.png";
+    }
+});
 
 let ammoLoaded = Ammo().then(function (AmmoLib) {
     window.Ammo = AmmoLib;
@@ -160,6 +183,7 @@ function showModelSelection(playerCount) {
             if (selectedModels.length === playerCount) {
                 document.getElementById("modelSelection").style.display = "none";
                 initGame(playerCount, selectedModels).catch(console.error);
+                document.getElementById('backgroundMusic').volume = 0.05;
             }
         });
     });
@@ -225,7 +249,7 @@ async function initGame(playerCount, selectedModels) {
     timerElement.style.position = 'absolute';
     timerElement.style.top = '20px';
     timerElement.style.right = '20px';
-    timerElement.style.color = '#ffffff';
+    timerElement.style.color = 'red';
     timerElement.style.fontSize = '24px';
     timerElement.style.fontWeight = 'bold';
     timerElement.style.zIndex = '9999'; // Assurez-vous que le timer est au-dessus du reste du contenu
@@ -295,7 +319,7 @@ async function initGame(playerCount, selectedModels) {
                 mesh.scaling = new BABYLON.Vector3(10, 10, 10); // Ajustez l'échelle pour couvrir toute la scène
             });
         });
-        
+   
        // Création des sphères avec les textures sélectionnées
        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
        sphere.position = startPoint;
