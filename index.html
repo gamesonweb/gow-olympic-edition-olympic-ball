@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Votre jeu Babylon.js</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olympic-ball</title>
     <script src="https://preview.babylonjs.com/ammo.js"></script>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
     <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.7.1/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
 
     <style>
         /* Reset default styles */
@@ -15,9 +19,13 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: Arial, sans-serif;
+            font-family: 'Fredoka One', cursive;
+            background: url('OIG1.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            transition: filter 0.5s ease-in-out; /* Transition pour le flou */
         }
 
+ 
         /* Center the canvas */
         #renderCanvas {
             width: 100%;
@@ -26,14 +34,19 @@
         }
 
         /* Style the start page container */
-        #startPage, #playerSelection, #modelSelection {
+        #startPage, #playerSelection, #modelSelection, #creditsPage, #controlMessage {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 999; /* Ensure it's on top */
-            display: none; /* Hide initially */
+            z-index: 999;
+            display: none;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: opacity 0s ease-in-out, transform 0.5s ease-in-out;
         }
 
         /* Make startPage visible initially */
@@ -41,86 +54,157 @@
             display: block;
         }
 
+        h1 {
+            font-size: 48px;
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
         /* Style the buttons */
-        button {
-            background-color: #0074D9;
+        .button {
+            background-color: #FFA500;
             color: #FFFFFF;
             border: none;
-            padding: 10px 20px;
+            padding: 15px 30px;
             margin: 10px;
             cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
+            font-size: 24px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Hover effect for buttons */
-        button:hover {
-            background-color: #005DA3;
-        }
-
-        /* Style the sphere options */
-        .sphere-option {
-            display: inline-block;
-            margin: 10px;
-            cursor: pointer;
-        }
-
-        .sphere-option canvas {
-            width: 100px;
-            height: 100px;
-            border: 2px solid #000;
-            border-radius: 50%;
+        .button:hover {
+            background-color: #FF8C00;
+            transform: scale(1.05);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
 <body>
+    <audio id="bookOpeningSound" src="son.mp3"></audio> 
+    <audio id="ballSound" src="ball.mp3"></audio> 
     <div id="startPage">
         <h1>Olympic-ball</h1>
-        <button id="startBtn">Jouer</button>
-        <button id="creditsBtn">Crédits</button>
+        <button class="button" id="startBtn">Jouer</button>
+        <button class="button" id="creditsBtn">Crédits</button>
     </div>
 
     <div id="playerSelection">
         <h2>Choisir le mode de jeu</h2>
-        <button id="onePlayerBtn">1 Joueur</button>
-        <button id="twoPlayersBtn">2 Joueurs</button>
+        <button class="button" id="onePlayerBtn">1 Joueur</button>
+        <button class="button" id="twoPlayersBtn">2 Joueurs</button>
     </div>
-
+    <div id="controlMessage">
+        <h2>Contrôles</h2>
+        <p>Instructions pour contrôler le joueur 1</p>
+        <button class="button" id="nextBtn">Suivant</button>
+    </div>
     <div id="modelSelection">
+        <h2>Choisir le modèle</h2>
         <canvas class="sphere-option" data-model="water" id="canvas-water"></canvas>
         <canvas class="sphere-option" data-model="volcano" id="canvas-volcano"></canvas>
         <canvas class="sphere-option" data-model="grass" id="canvas-grass"></canvas>
         <canvas class="sphere-option" data-model="rock" id="canvas-rock"></canvas>
     </div>
-
+    <div id="creditsPage">
+            <h2>Crédits</h2>
+            <p>Created By :</p>
+            <p>ABOULKACIM Salah Eddine</p>
+            <p>ADANSAR Abdellah</p>
+            <p>TAKI EDINE Marouane</p>
+            <button class="button" id="closeCreditsBtn">Fermer</button>
+    </div>
+        
+        
     <canvas id="renderCanvas" touch-action="none"></canvas>
     <script type="module" src="game.js"></script>
-
+    
+        
     <script>
+        function animateSectionHide(section) {
+            gsap.to(section, {opacity: 0, duration: 0.5, transform: "translateY(-10%)", onComplete: function() {
+                section.style.display = 'none';
+            }});
+        }
+        
+        function animateSectionShow(section) {
+            // Vérifier si la section est le message de contrôle
+            if (section.id === 'controlMessage') {
+                // Cacher la section de sélection de modèle si elle est affichée
+                const modelSelection = document.getElementById('modelSelection');
+                if (modelSelection.style.display !== 'none') {
+                    animateSectionHide(modelSelection);
+                }
+            }
+            // Afficher la section actuelle
+            section.style.display = 'block';
+            gsap.fromTo(section, {opacity: 0, transform: "translateY(10%)"}, {opacity: 1, duration: 0.5, transform: "translateY(0)"});
+        }
+
         document.getElementById('startBtn').addEventListener('click', function() {
-            document.getElementById('startPage').style.display = 'none';
-            document.getElementById('playerSelection').style.display = 'block';
+            document.getElementById('ballSound').play();
+            animateSectionHide(document.getElementById('startPage'));
+            animateSectionShow(document.getElementById('playerSelection'));
         });
 
         document.getElementById('onePlayerBtn').addEventListener('click', function() {
-            document.getElementById('playerSelection').style.display = 'none';
-            document.getElementById('modelSelection').style.display = 'block';
-        });
+            document.getElementById('ballSound').play();
+            animateSectionHide(document.getElementById('playerSelection'));
+            animateSectionHide(document.getElementById('modelSelection'));
+            // Afficher le message de contrôle du joueur 1
+            animateSectionShow(document.getElementById('controlMessage'));
+           // Mettre à jour les instructions pour un joueur
+document.getElementById('controlMessage').querySelector('p').innerText = "Instructions pour contrôler le joueur 1 \n" + 
+"Déplacement : Flèches Haut / Bas / Gauche / Droite \n" +
+    "Sauter : Barre d'espace" ;
+});
+document.getElementById('twoPlayersBtn').addEventListener('click', function() {
+        document.getElementById('ballSound').play();
+        animateSectionHide(document.getElementById('playerSelection'));
+        // Afficher le message de contrôle des joueurs
+        animateSectionShow(document.getElementById('controlMessage'));
+        // Mettre à jour les instructions pour deux joueurs
+        document.getElementById('controlMessage').querySelector('p').innerText = "Instructions pour contrôler le joueur 1 et le joueur 2 \n" +
+        "Joueur 1 : \n" +
+    "Déplacement : Flèches Haut / Bas / Gauche / Droite \n" +
+    "Sauter : Barre d'espace" +
+     "Joueur 2 : \n" +
+     "Déplacement : Z / S / Q / D \n" +
+    "Sauter : Majuscule (Shift)";
+    });
 
-        document.getElementById('twoPlayersBtn').addEventListener('click', function() {
-            document.getElementById('playerSelection').style.display = 'none';
-            document.getElementById('modelSelection').style.display = 'block';
-        });
+    document.getElementById('nextBtn').addEventListener('click', function() {
+        document.getElementById('ballSound').play();
+        animateSectionHide(document.getElementById('controlMessage'));
+        // Retirer la classe blur pour restaurer le fond
+        document.documentElement.classList.remove('blur');
+        animateSectionShow(document.getElementById('modelSelection'));
+    });
 
-        // Add event listeners for the model selection if needed
-        const models = document.querySelectorAll('.sphere-option');
-        models.forEach(model => {
-            model.addEventListener('click', function() {
-                const selectedModel = this.getAttribute('data-model');
-                console.log('Selected model:', selectedModel);
-                // Implement further actions based on the selected model
-            });
+    document.getElementById('creditsBtn').addEventListener('click', function() {
+        // Jouer le son du livre qui s'ouvre
+        document.getElementById('bookOpeningSound').play();
+        
+        animateSectionHide(document.getElementById('startPage'));
+        animateSectionShow(document.getElementById('creditsPage'));
+    });
+
+    document.getElementById('closeCreditsBtn').addEventListener('click', function() {
+        document.getElementById('bookOpeningSound').play();
+        animateSectionHide(document.getElementById('creditsPage'));
+        animateSectionShow(document.getElementById('startPage'));
+    });
+
+    // Add event listeners for the model selection
+    const models = document.querySelectorAll('.sphere-option');
+    models.forEach(model => {
+        model.addEventListener('click', function() {
+            const selectedModel = this.getAttribute('data-model');
+            console.log('Selected model:', selectedModel);
+            // Implement further actions based on the selected model
         });
-    </script>
+    });
+</script>
 </body>
 </html>

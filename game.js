@@ -110,10 +110,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function createPreviewSphere(canvas, model) {
         const engine = new BABYLON.Engine(canvas, true);
         const scene = new BABYLON.Scene(engine);
+        scene.clearColor = new BABYLON.Color4(0, 0, 0, 0); // Transparent
+
         scene.createDefaultCameraOrLight(true, true, true);
         const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {}, scene);
         const mat = new BABYLON.PBRMaterial("sphereMat", scene);
-    
+        sphere.position = new BABYLON.Vector3(0, 0, 0.5); // Adjust position as needed
+        sphere.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+
         switch (model) {
             case 'water':
                 applyMaterialProperties(mat, materialProperties.water , 'https://playgrounds.babylonjs.xyz/glass-ball/');
@@ -130,7 +134,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     
         sphere.material = mat;
-    
+    // Ajouter une animation de rotation à la sphère
+scene.registerBeforeRender(() => {
+    sphere.rotation.y += 0.01; // Adjust rotation speed as needed
+});
         engine.runRenderLoop(() => {
             scene.render();
         });
@@ -282,7 +289,13 @@ async function initGame(playerCount, selectedModels) {
         var startPoint = levelConfig.startPoint;
         var startPoint2 = levelConfig.startPoint;
         var endPoint = levelConfig.endPoint;
-
+        BABYLON.SceneLoader.ImportMesh("", "", "sky.glb", scene, function (meshes) {
+            meshes.forEach(mesh => {
+                mesh.position = new BABYLON.Vector3(0, 0, 0); // Ajustez la position si nécessaire
+                mesh.scaling = new BABYLON.Vector3(10, 10, 10); // Ajustez l'échelle pour couvrir toute la scène
+            });
+        });
+        
        // Création des sphères avec les textures sélectionnées
        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
        sphere.position = startPoint;
