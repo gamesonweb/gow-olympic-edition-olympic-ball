@@ -378,10 +378,6 @@ async function initGame(playerCount, selectedModels) {
         sphere.position = startPoint.clone(); 
     }
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     engine.runRenderLoop(async function () {
         let moveSpeed = levels[levelIndex].moveSpeed;
         let maxJumpHeight = levels[levelIndex].maxJumpHeight;
