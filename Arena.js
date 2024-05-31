@@ -21,33 +21,38 @@ export default class Arena {
   }
 
   createGround() {
+    // Charger la texture du sol
+    const groundTexture = new BABYLON.Texture("patterned_brick_floor_diff_4k.jpg", this.scene);
+    const groundMaterial = new BABYLON.StandardMaterial("groundMat", this.scene);
+    groundMaterial.diffuseTexture = groundTexture;
+
     let ground;
     if (this.map) {
-      ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground", this.map, {
-        width: this.groundConfig.width,
-        height: this.groundConfig.height,
-        subdivisions: this.groundConfig.subdivisions,
-        minHeight: this.groundConfig.minHeight,
-        maxHeight: this.groundConfig.maxHeight,
-      }, this.scene);
-      
-      ground.onReady = () => {
-        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
-      };
+        ground = BABYLON.MeshBuilder.CreateGroundFromHeightMap("ground", this.map, {
+            width: this.groundConfig.width,
+            height: this.groundConfig.height,
+            subdivisions: this.groundConfig.subdivisions,
+            minHeight: this.groundConfig.minHeight,
+            maxHeight: this.groundConfig.maxHeight,
+        }, this.scene);
+
+        ground.onReady = () => {
+            ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
+            ground.material = groundMaterial; // Appliquer le matériau avec la texture après la création
+        };
     } else {
-      ground = BABYLON.MeshBuilder.CreateGround("ground", {
-        width: this.groundConfig.width,
-        height: this.groundConfig.height,
-        subdivisions: this.groundConfig.subdivisions,
-      }, this.scene);
+        ground = BABYLON.MeshBuilder.CreateGround("ground", {
+            width: this.groundConfig.width,
+            height: this.groundConfig.height,
+            subdivisions: this.groundConfig.subdivisions,
+        }, this.scene);
 
-      ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
+        ground.physicsImpostor = new BABYLON.PhysicsImpostor(ground, BABYLON.PhysicsImpostor.MeshImpostor, { mass: 0, restitution: 0.9 }, this.scene);
+        ground.material = groundMaterial; // Appliquer le matériau avec la texture directement
     }
-      
 
-      return ground;
-  }
-  
+    return ground;
+}
 
   createHole() {
     const holeMaterial = new BABYLON.StandardMaterial("holeMat", this.scene);
@@ -83,9 +88,12 @@ createWater() {
 
 
 createWalls() {
+  // Charger la texture de mur
+  const wallTexture = new BABYLON.Texture("brick_wall_09_diff_2k.jpg", this.scene);
+
   this.wallsConfig.forEach(wallConfig => {
       const wallMaterial = new BABYLON.StandardMaterial("wallMat", this.scene);
-      wallMaterial.diffuseColor = new BABYLON.Color3(...wallConfig.color);
+      wallMaterial.diffuseTexture = wallTexture; // Appliquer la texture de mur
       const wall = BABYLON.MeshBuilder.CreateBox("wall", { height: wallConfig.height, width: wallConfig.width, depth: wallConfig.depth }, this.scene);
       wall.position = new BABYLON.Vector3(...wallConfig.position);
       wall.material = wallMaterial;
@@ -101,8 +109,7 @@ createWalls() {
           });
       }
   });
-}
-createRobots() {
+}createRobots() {
   if (this.levelConfig && this.levelConfig.robots) {
     this.levelConfig.robots.forEach(robotConfig => {
       const robot = new Robot(this.scene, robotConfig.position, robotConfig.attackRange, robotConfig.attackDamage);
