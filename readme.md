@@ -4,7 +4,9 @@ Welcome to **Olympic Ball Adventure**, a thrilling game where players navigate t
 
 # Table of Contents
 
+- [Link to the video](#link-to-the-video)
 - [Deployment link](#deployment-link)
+- [Images preview](#images-preview)
 - [Getting Started](#getting-started)
 - [Game Controls](#game-controls)
   - [Player 1](#player-1)
@@ -16,9 +18,29 @@ Welcome to **Olympic Ball Adventure**, a thrilling game where players navigate t
 - [Membres de l'équipe](#membres-de-léquipe)
 - [Professeur encadrant](#professeur-encadrant)
 
+## Link to the video : 
+
+https://1drv.ms/v/s!Ak1bezYRHZc7erCLEZEjXkCS1LU
+
 ## Deployment link
 
 [Olympic Ball](https://olympic-ball.netlify.app/)
+
+## Images preview 
+
+![1-min](https://vu.fr/aRDeU)
+
+![2-min](https://vu.fr/ueiIO)
+
+![3-min](https://vu.fr/ZjDIT)
+
+![4-min](https://vu.fr/WYIwY)
+
+![5-min](https://vu.fr/KhocB)
+
+![6-min](https://vu.fr/FloWC)
+
+
 
 ## Getting Started
 1. Clone the repository:
