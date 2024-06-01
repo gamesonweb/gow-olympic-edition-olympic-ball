@@ -16,7 +16,7 @@ export default class Arena {
     this.robots = [];
     this.levelConfig = levelConfig;
     this.waterAreas = levelConfig.waterAreas; 
-    this.waterSpeedReduction = 0.2; 
+    this.waterSpeedReduction = 0.8; 
 
   }
 
@@ -136,7 +136,8 @@ isSphereInWater(sphere, waterArea) {
       sphere.position.x >= waterArea.x - waterArea.width / 2 &&
       sphere.position.x <= waterArea.x + waterArea.width / 2 &&
       sphere.position.z >= waterArea.z - waterArea.height / 2 &&
-      sphere.position.z <= waterArea.z + waterArea.height / 2
+      sphere.position.z <= waterArea.z + waterArea.height / 2 &&
+      sphere.position.y <= waterArea.y + 0.5
   );
 }
 
