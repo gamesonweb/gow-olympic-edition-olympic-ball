@@ -387,12 +387,9 @@ async function initGame(playerCount, selectedModels) {
         let maxJumpHeight = levels[levelIndex].maxJumpHeight;
      // Calculer la vitesse de déplacement de la sphère
      let sphereVelocity = sphere.physicsImpostor.getLinearVelocity().length();
-     let sphereVelocity1 = sphere2.physicsImpostor.getLinearVelocity().length();
-
      let isSphereMoving = sphereVelocity > 0.7; // Définir un seuil pour détecter le mouvement de la sphère
-     let isSphereMoving1 = sphereVelocity1 > 0.7; // Définir un seuil pour détecter le mouvement de la sphère
-     // Jouer le son de roulement lorsque la sphère est en mouvement
-     if (isSphereMoving || isSphereMoving1) {
+          // Jouer le son de roulement lorsque la sphère est en mouvement
+     if (isSphereMoving) {
          if (rollSound.paused) {
             // diminuez le volume de la musique de fond
             document.getElementById('rollSound').volume = 0.02;
@@ -401,6 +398,19 @@ async function initGame(playerCount, selectedModels) {
      } else {
          rollSound.pause();
      }
+        if (playerCount === 2 ) {
+            let sphereVelocity1 = sphere2.physicsImpostor.getLinearVelocity().length();
+            let isSphereMoving1 = sphereVelocity1 > 0.7; // Définir un seuil pour détecter le mouvement de la sphère
+            if(isSphereMoving1 || isSphereMoving){
+                if (rollSound.paused) {
+                    // diminuez le volume de la musique de fond
+                    document.getElementById('rollSound').volume = 0.02;
+                     rollSound.play();
+                 }
+            } else {
+                rollSound.pause();
+            }
+        }
     
         arena.robots.forEach(robot => {
             if (sphere2) {
