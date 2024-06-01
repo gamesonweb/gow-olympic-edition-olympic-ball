@@ -16,6 +16,10 @@ const musicIcon = document.getElementById("musicIcon");
 const musicImage = document.getElementById("musicImage");
 document.getElementById('backgroundMusic').volume = 0.4;
 
+const rollSound = document.getElementById('rollSound');
+const collisionSound = document.getElementById('collisionSound');
+const jumpSound = document.getElementById('jumpSound');
+const holeSound = document.getElementById('holeSound');
 
 
 // Ajoutez un gestionnaire d'événements pour détecter les clics sur l'icône de musique
@@ -323,7 +327,7 @@ async function initGame(playerCount, selectedModels) {
        // Création des sphères avec les textures sélectionnées
        sphere = BABYLON.Mesh.CreateSphere('sphere1', 16, 0.75, scene);
        sphere.position = startPoint;
-       sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+       sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.2, friction: 0.5 }, scene); // Réduire la restitution
        applyTextureToSphere(sphere, selectedModels[0]);
 
         if (playerCount === 2) {
@@ -334,7 +338,7 @@ async function initGame(playerCount, selectedModels) {
             );
             sphere2 = BABYLON.Mesh.CreateSphere('sphere2', 16, 0.75, scene);
             sphere2.position = startPoint2;
-            sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.9, friction: 0.5 }, scene);
+            sphere2.physicsImpostor = new BABYLON.PhysicsImpostor(sphere2, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1, restitution: 0.2, friction: 0.5 }, scene);
             applyTextureToSphere(sphere2, selectedModels[1]);
 
             // Camera for player 1
@@ -381,6 +385,23 @@ async function initGame(playerCount, selectedModels) {
     engine.runRenderLoop(async function () {
         let moveSpeed = levels[levelIndex].moveSpeed;
         let maxJumpHeight = levels[levelIndex].maxJumpHeight;
+     // Calculer la vitesse de déplacement de la sphère
+     let sphereVelocity = sphere.physicsImpostor.getLinearVelocity().length();
+     let sphereVelocity1 = sphere2.physicsImpostor.getLinearVelocity().length();
+
+     let isSphereMoving = sphereVelocity > 0.7; // Définir un seuil pour détecter le mouvement de la sphère
+     let isSphereMoving1 = sphereVelocity1 > 0.7; // Définir un seuil pour détecter le mouvement de la sphère
+     // Jouer le son de roulement lorsque la sphère est en mouvement
+     if (isSphereMoving || isSphereMoving1) {
+         if (rollSound.paused) {
+            // diminuez le volume de la musique de fond
+            document.getElementById('rollSound').volume = 0.02;
+             rollSound.play();
+         }
+     } else {
+         rollSound.pause();
+     }
+    
         arena.robots.forEach(robot => {
             if (sphere2) {
                 robot.update(sphere.position, sphere2.position);
@@ -408,6 +429,25 @@ async function initGame(playerCount, selectedModels) {
             forceDirection.normalize().scaleInPlace(moveSpeed);
             sphere.physicsImpostor.applyForce(forceDirection, sphere.getAbsolutePosition());
         }
+        /*
+        var changeDirectionMultiplier = 2; // Vous pouvez ajuster ce multiplicateur selon vos besoins
+
+          // Dans la fonction engine.runRenderLoop, où vous appliquez la force à la sphère en fonction des touches enfoncées :
+          if (!isSphereFalling) {
+          var forceDirection = new BABYLON.Vector3(0, 0, 0);
+          if (keysPlayer1['ArrowUp']) forceDirection.z += moveSpeed;
+          if (keysPlayer1['ArrowDown']) forceDirection.z -= moveSpeed;
+          if (keysPlayer1['ArrowLeft']) forceDirection.x -= moveSpeed;
+         if (keysPlayer1['ArrowRight']) forceDirection.x += moveSpeed;
+
+         // Diminuer la force dans la direction actuelle avant de changer de direction
+         var currentVelocity = sphere.physicsImpostor.getLinearVelocity().clone();
+        var timeToChangeDirection = 0.5; // Temps en secondes avant de changer de direction (ajustez selon vos besoins)
+         var forceToApply = forceDirection.subtract(currentVelocity).scale(changeDirectionMultiplier / timeToChangeDirection);
+    
+        sphere.physicsImpostor.applyForce(forceToApply, sphere.getAbsolutePosition());
+}
+        */ 
 
         if (playerCount === 2 && sphere2) {
             var forceDirection2 = new BABYLON.Vector3(0, 0, 0);
@@ -423,6 +463,7 @@ async function initGame(playerCount, selectedModels) {
             var jumpForce = new BABYLON.Vector3(0, 5, 0);
             sphere.physicsImpostor.applyImpulse(jumpForce, sphere.getAbsolutePosition());
             isSphere1Airborne = true;
+            jumpSound.play();
             setTimeout(() => isSphere1Airborne = false, 2000);
         }
 
@@ -430,6 +471,7 @@ async function initGame(playerCount, selectedModels) {
             var jumpForce2 = new BABYLON.Vector3(0, 5, 0);
             sphere2.physicsImpostor.applyImpulse(jumpForce2, sphere2.getAbsolutePosition());
             isSphere2Airborne = true;
+            jumpSound.play();
             setTimeout(() => isSphere2Airborne = false, 2000);
         }
 
@@ -504,14 +546,15 @@ async function initGame(playerCount, selectedModels) {
         const winThreshold = 0.5;
 
         if ((BABYLON.Vector3.Distance(sphere.position, endPoint)) < winThreshold && !winnerDeclared) {
+            holeSound.play();
             winnerDeclared = true;
             winningPlayer = playerNumber;
             // Arrêter le timer
+
             clearInterval(timerInterval)
             sphere.physicsImpostor.dispose();
 
             BABYLON.Animation.CreateAndStartAnimation('fall', sphere, 'position', 60, 30, sphere.position, endPoint, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-
             setTimeout(function () {
                 levelIndex++;
                 if (levelIndex < levels.length) {
@@ -523,7 +566,9 @@ async function initGame(playerCount, selectedModels) {
                     isSphereFalling = false;
                 }, 1000);
             }, 2000);
+            
         }
+
     }
 
     function displayWinMessage() {
