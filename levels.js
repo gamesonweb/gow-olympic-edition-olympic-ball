@@ -38,7 +38,7 @@ const levels = [
             { height: 1, width: 20, depth: 0.2, position: [0, 0.5, 10], color: [1, 0.5, 0] },  //high
 
         ],
-        moveSpeed: 7,
+        moveSpeed: 3,
         waterAreas: [],
         timeLimit: 40,
         maxJumpHeight:0.4,
@@ -84,7 +84,7 @@ const levels = [
             { height: 1, width: 6, depth: 0.2, position: [7.2, 0.5, 5.1], color: [1, 0.5, 0] },  // Mur en bas             
             { height: 1, width: 1.7, depth: 0.2, position: [-2, 1, 0], color: [6, 8, 1], isMoving: true, axis: 'z', range: 5, speed: 1 }, // Mur mobile à gauche
         ],
-        moveSpeed: 2,
+        moveSpeed: 3,
         robots: [
             {
                 position: new BABYLON.Vector3(4, 0.1,), // Position du premier robot
@@ -115,26 +115,26 @@ const levels = [
             { height: 1, width: 20, depth: 0.2, position: [0, 0.5, 10], color: [1, 0.5, 0] },  //high
 
         ],
-        moveSpeed: 10,
+        moveSpeed: 3,
         robots: [
             {
                 position: new BABYLON.Vector3(0, 0.1, -1), // Position du premier robot
-                attackRange: 2, // Portée d'attaque du premier robot
+                attackRange: 3, // Portée d'attaque du premier robot
                 attackDamage: 10 // Dégâts infligés par le premier robot
             },
             {
                 position: new BABYLON.Vector3(-8, 0.1, 0), // Position du deuxième robot
-                attackRange: 2, // Portée d'attaque du deuxième robot
+                attackRange: 3, // Portée d'attaque du deuxième robot
                 attackDamage: 10 // Dégâts infligés par le deuxième robot
             },
             {
                 position: new BABYLON.Vector3(8, 0.1, 0), // Position du deuxième robot
-                attackRange: 2, // Portée d'attaque du deuxième robot
+                attackRange: 3, // Portée d'attaque du deuxième robot
                 attackDamage: 10 // Dégâts infligés par le deuxième robot
             },
             {
                 position: new BABYLON.Vector3(4, 0.1, -8), // Position du deuxième robot
-                attackRange: 2, // Portée d'attaque du deuxième robot
+                attackRange: 3, // Portée d'attaque du deuxième robot
                 attackDamage: 10 // Dégâts infligés par le deuxième robot
             }
         ],
@@ -163,11 +163,11 @@ const levels = [
             { height: 1, width: 1.7, depth: 0.2, position: [-2, 1, 0], color: [6, 8, 1], isMoving: true, axis: 'z', range: 5, speed: 1 }, // Mur mobile à gauche
             { height: 1, width: 1.7, depth: 0.2, position: [3, 1, 0], color: [6, 8, 1], isMoving: true, axis: 'z', range: 5, speed: 2 }, // Mur mobile à droite
         ],
-        moveSpeed: 7,
+        moveSpeed: 3,
         robots: [
             {
                 position: new BABYLON.Vector3(5, 0.1,), // Position du premier robot
-                attackRange: 2, // Portée d'attaque du premier robot
+                attackRange: 3, // Portée d'attaque du premier robot
                 attackDamage: 10 // Dégâts infligés par le premier robot
             },
 
@@ -201,7 +201,7 @@ const levels = [
             { height: 1, width: 0.2, depth: 30, position: [15, 0.5, 0], color: [1, 0.5, 0] },  //outside right
             { height: 1, width: 30, depth: 0.2, position: [0, 0.5, 15], color: [1, 0.5, 0] },  //outside high
         ],
-        moveSpeed: 4,
+        moveSpeed: 3,
         robots: [
             {
                 position: new BABYLON.Vector3(6.5, 0.1, -7), // Position du premier robot
@@ -215,17 +215,17 @@ const levels = [
             },
             {
                 position: new BABYLON.Vector3(-8, 0.1, 7), // Position du deuxième robot
-                attackRange: 2, // Portée d'attaque du deuxième robot
+                attackRange: 3, // Portée d'attaque du deuxième robot
                 attackDamage: 10 // Dégâts infligés par le deuxième robot
             },
             {
                 position: new BABYLON.Vector3(8, 0.1, 7), // Position du deuxième robot
-                attackRange: 2, // Portée d'attaque du deuxième robot
+                attackRange: 3, // Portée d'attaque du deuxième robot
                 attackDamage: 10 // Dégâts infligés par le deuxième robot
             },
             {
                 position: new BABYLON.Vector3(-8, 0.1, ), // Position du deuxième robot
-                attackRange: 2, // Portée d'attaque du deuxième robot
+                attackRange: 3, // Portée d'attaque du deuxième robot
                 attackDamage: 10 // Dégâts infligés par le deuxième robot
             },
             
@@ -247,7 +247,7 @@ const levels = [
             { height: 5.5, width: 1, depth: 3, position: [2.5, 0.5, 0], color: [1, 0.5, 0] },
             { height: 7, width: 1, depth: 3, position: [4, 0.5, 0], color: [1, 0.5, 0] },
         ],
-        moveSpeed: 2,
+        moveSpeed: 3,
         waterAreas: [],
         timeLimit: 90,
         maxJumpHeight:8,
@@ -304,16 +304,16 @@ const levels = [
             { height: 1, width: 11, depth: 0.2, position: [14.5, 0.5, -9], color: [1, 0.5, 0] },
             { height: 1, width: 5, depth: 0.2, position: [7.5, 0.5, -22.4], color: [1, 0.5, 0] },
         ],
-        moveSpeed: 2,
+        moveSpeed: 3,
         robots: [
             {
                 position: new BABYLON.Vector3(3, 0.1, 25), // Position du premier robot
-                attackRange: 2, // Portée d'attaque du premier robot
+                attackRange: 3, // Portée d'attaque du premier robot
                 attackDamage: 10 // Dégâts infligés par le premier robot
             },
             {
                 position: new BABYLON.Vector3(5, 0.1, 15),
-                attackRange: 2,
+                attackRange: 3,
                 attackDamage: 10
             },
             {
