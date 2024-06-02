@@ -1,6 +1,6 @@
 # Game Title: Olympic Ball
 
-Welcome to **Olympic Ball Adventure**, a thrilling game where players navigate their ball through challenging terrains, each with unique textures and properties. Below you'll find the instructions to get started, the controls, and other essential details.
+Experience the excitement of the **Olympic Games** with Olympic Ball Adventure, a thrilling journey where players guide their ball through an array of challenging terrains. Below, discover the instructions to embark on your adventure, master the controls, and uncover other essential details.
 
 # Table of Contents
 
