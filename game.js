@@ -439,7 +439,7 @@ async function initGame(playerCount, selectedModels) {
             forceDirection.normalize().scaleInPlace(moveSpeed);
             sphere.physicsImpostor.applyForce(forceDirection, sphere.getAbsolutePosition());
         }
-        /*
+        
         var changeDirectionMultiplier = 2; // Vous pouvez ajuster ce multiplicateur selon vos besoins
 
           // Dans la fonction engine.runRenderLoop, où vous appliquez la force à la sphère en fonction des touches enfoncées :
@@ -452,12 +452,12 @@ async function initGame(playerCount, selectedModels) {
 
          // Diminuer la force dans la direction actuelle avant de changer de direction
          var currentVelocity = sphere.physicsImpostor.getLinearVelocity().clone();
-        var timeToChangeDirection = 0.5; // Temps en secondes avant de changer de direction (ajustez selon vos besoins)
+        var timeToChangeDirection = 3; // Temps en secondes avant de changer de direction (ajustez selon vos besoins)
          var forceToApply = forceDirection.subtract(currentVelocity).scale(changeDirectionMultiplier / timeToChangeDirection);
     
         sphere.physicsImpostor.applyForce(forceToApply, sphere.getAbsolutePosition());
 }
-        */ 
+        
 
         if (playerCount === 2 && sphere2) {
             var forceDirection2 = new BABYLON.Vector3(0, 0, 0);
@@ -467,6 +467,15 @@ async function initGame(playerCount, selectedModels) {
             if (keysPlayer2['d']) forceDirection2.x += moveSpeed;
             forceDirection2.normalize().scaleInPlace(moveSpeed);
             sphere2.physicsImpostor.applyForce(forceDirection2, sphere2.getAbsolutePosition());
+
+            // Diminuer la force dans la direction actuelle avant de changer de direction
+            var currentVelocity2 = sphere2.physicsImpostor.getLinearVelocity().clone();
+            var timeToChangeDirection2 = 3; // Temps en secondes avant de changer de direction (ajustez selon vos besoins)
+            var forceToApply = forceDirection2.subtract(currentVelocity2).scale(changeDirectionMultiplier / timeToChangeDirection2);
+
+            sphere2.physicsImpostor.applyForce(forceToApply, sphere2.getAbsolutePosition());
+
+
         }
 
         if (keysPlayer1['Space'] && !isSphere1Airborne && sphere.position.y < maxJumpHeight) {
